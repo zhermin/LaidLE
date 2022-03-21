@@ -4,24 +4,23 @@
 
 ********************/
 
-CREATE TABLE IF NOT EXISTS customers (
- first_name VARCHAR(64) NOT NULL,
- last_name VARCHAR(64) NOT NULL,
- email VARCHAR(64) UNIQUE NOT NULL,
- dob DATE NOT NULL,
- since DATE NOT NULL,
- customerid VARCHAR(16) PRIMARY KEY,
- country VARCHAR(16) NOT NULL);
+CREATE TABLE IF NOT EXISTS donor (
+ donor_email VARCHAR(64) PRIMARY KEY,
+ donor_pw VARCHAR(64) NOT NULL,
+ coins INT NOT NULL,
+ cc_type VARCHAR(64) NOT NULL,
+ cc_number VARCHAR(16) NOT NULL);
 	
-CREATE TABLE IF NOT EXISTS games(
- name VARCHAR(32),
- version CHAR(3),
- price NUMERIC NOT NULL,
- PRIMARY KEY (name, version));
-  
- CREATE TABLE downloads(
- customerid VARCHAR(16) REFERENCES customers(customerid) ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
- name VARCHAR(32),
- version CHAR(3),
- PRIMARY KEY (customerid, name, version),
- FOREIGN KEY (name, version) REFERENCES games(name, version) ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED);
+CREATE TABLE IF NOT EXISTS merchant (
+ merchant_email VARCHAR(32) PRIMARY KEY,
+ merchat_pw VARCHAR(32) NOT NULL,
+ merchant_name VARCHAR(32) NOT NULL);
+
+CREATE TABLE IF NOT EXISTS beneficiary (
+benef_email VARCHAR(64) PRIMARY KEY, 
+benef_pw VARCHAR(64) NOT NULL,
+income INT NOT NULL CHECK (income > 0),
+household_pax INT NOT NULL CHECK (household_pax > 0));
+
+
+
