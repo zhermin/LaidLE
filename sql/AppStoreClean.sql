@@ -1,6 +1,6 @@
 /*******************
 
-  Cleaning script
+    Cleaning script
 
 *******************/
 

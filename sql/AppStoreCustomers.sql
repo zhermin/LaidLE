@@ -1,6 +1,6 @@
 /***************************
 
-  Populate the customers table
+    Populate the customers table
 
 ****************************/
 

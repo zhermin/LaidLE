@@ -8,7 +8,7 @@ LaidLE is a CRUD webapp for our food-crowdfunding social enterprise project. As 
 
 ## Team Members
 
-1. Tam Zher Min
+1. Tam Zher Min (A0206262N)
 2. Elisha Lee (A018492U)
 3. Weldon Chue (A0182438Y)
 4. Tran Minh Hoang (A0187135B)

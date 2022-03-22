@@ -1,6 +1,6 @@
 /***************************
 
-  Populate the games table
+    Populate the games table
 
 ****************************/
 

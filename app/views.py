@@ -23,7 +23,7 @@ def index(request):
 # Create your views here.
 def view(request, id):
     """Shows the main page"""
-    
+
     ## Use raw query to get a customer
     with connection.cursor() as cursor:
         cursor.execute("SELECT * FROM customers WHERE customerid = %s", [id])
@@ -46,17 +46,15 @@ def add(request):
             customer = cursor.fetchone()
             ## No customer with same id
             if customer == None:
-                ##TODO: date validation
-                cursor.execute("INSERT INTO customers VALUES (%s, %s, %s, %s, %s, %s, %s)"
-                        , [request.POST['first_name'], request.POST['last_name'], request.POST['email'],
-                           request.POST['dob'] , request.POST['since'], request.POST['customerid'], request.POST['country'] ])
-                return redirect('index')    
+                ## TODO: date validation
+                cursor.execute(f"INSERT INTO customers VALUES ({request.POST['first_name']}, {request.POST['last_name']}, {request.POST['email']}, {request.POST['dob']}, {request.POST['since']}, {request.POST['customerid']}, {request.POST['country']})")
+                return redirect('index')
             else:
                 status = 'Customer with ID %s already exists' % (request.POST['customerid'])
 
 
     context['status'] = status
- 
+
     return render(request, "app/add.html", context)
 
 # Create your views here.
@@ -88,5 +86,5 @@ def edit(request, id):
 
     context["obj"] = obj
     context["status"] = status
- 
+
     return render(request, "app/edit.html", context)
