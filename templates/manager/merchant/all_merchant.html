@@ -1,0 +1,35 @@
+<h2>Manage All Merchants</h2>
+<a href="add/merchant">Register New Merchant</a>
+<table border="1">
+    <thead>
+        <th>Stall Name</th>
+        <th>Email</th>
+        <!-- <th>Hashed Password</th> -->
+        <th>Location</th>
+        <th>Action</th>
+    </thead>
+    {% for merchant in merchants %}
+        <tr>
+            <td>{{ merchant.0 }}</td>
+            <td>{{ merchant.1 }}</td>
+            <!-- <td>{{ merchant.2 }}</td> -->
+            <td>{{ merchant.3 }}</td>
+            <td>
+                <a href="merchant/{{ merchant.0 }}"><button>View</button></a>
+                <a href="merchant/{{ merchant.0 }}/edit"><button>Edit</button></a>
+                <form method="POST" style="display: inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="merchant_email" value="{{ merchant.0 }}" />
+                    <button
+                        onclick="return confirm('Are you sure you want to delete user {{merchant.0}}?');"
+                        type="submit"
+                        name="action"
+                        value="delete"
+                    >
+                        Delete
+                    </button>
+                </form>
+            </td>
+        </tr>
+    {% endfor %}
+</table>

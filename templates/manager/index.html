@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Manager Page</h1>
+    <h2>Welcome Manager {{ request.session.name }}!</h2>
+    <p style="color: red">{{ status|safe }}</p>
+
+    <br>
+
+    {% include 'manager/beneficiary/all_beneficiary.html' with variable=beneficiaries %}
+
+    <br><br>
+
+    {% include 'manager/merchant/all_merchant.html' with variable=merchants %}
+
+    <br><br>
+
+    {% include 'manager/merchant/all_food.html' with variable=food_items %}
+
+    <br><br>
+
+    {% include 'manager/donor/all_donor.html' with variable=donors %}
+
+{% endblock %}

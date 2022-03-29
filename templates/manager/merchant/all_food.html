@@ -1,0 +1,32 @@
+<h2>Manage All Merchants' Food Items</h2>
+<table border="1">
+    <thead>
+        <th>Email</th>
+        <th>Food Name</th>
+        <th>Description</th>
+        <th>Action</th>
+    </thead>
+    {% for food_items in food_items %}
+        <tr>
+            <td>{{ food_items.1 }}</td>
+            <td>{{ food_items.2 }}</td>
+            <td>{{ food_items.3 }}</td>
+            <td>
+                <a href="food/{{ food_item.1 }}"><button>View</button></a>
+                <a href="food/{{ food_item.1 }}/edit"><button>Edit</button></a>
+                <form method="POST" style="display: inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="food_sn" value="{{ food_item.1 }}" />
+                    <button
+                        onclick="return confirm('Are you sure you want to delete item {{food_item.2}}?');"
+                        type="submit"
+                        name="action"
+                        value="delete"
+                    >
+                        Delete
+                    </button>
+                </form>
+            </td>
+        </tr>
+    {% endfor %}
+</table>

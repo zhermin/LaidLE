@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Donor Signup Page</h1>
+<form method="POST">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label for="signup_name" class="form-label">Full Name</label>
+        <input type="text" name="donor_name" class="form-control" id="signup_name" aria-describedby="emailHelp">
+    </div>
+    <div class="mb-3">
+        <label for="signup_email" class="form-label">Email</label>
+        <input type="email" name="donor_email" class="form-control" id="signup_email" aria-describedby="emailHelp">
+    </div>
+    <div class="mb-3">
+        <label for="signup_password" class="form-label">Password</label>
+        <input type="password" name="donor_pw" class="form-control" id="signup_password">
+    </div>
+    <button type="submit" value="login" class="btn btn-primary">Submit</button>
+</form>
+{% endblock %}

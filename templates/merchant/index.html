@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Merchant Page</h1>
+<h2>Welcome Merchant Malaysian!</h2>
+<p style="color: red">{{ status|safe }}</p>
+
+<br>
+
+<h2>Redeem Your Favourite Food!</h2>
+<a href="food/add">Add New Food Item</a>
+
+<table border="1">
+    <thead>
+        <th>Food</th>
+        <th>Description</th>
+        <th>Action</th>
+    </thead>
+    {% for food_item in food_items %}
+        <tr>
+            <td>{{ food_item.1 }}</td>
+            <td>{{ food_item.2 }}</td>
+            <td>
+                <a href="food/{{ food_item.0 }}"><button>View</button></a>
+                <a href="food/{{ food_item.0 }}/edit"><button>Edit</button></a>
+                <form method="POST" style="display: inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="food_sn" value="{{ food_item.0 }}" />
+                    <button
+                        onclick="return confirm('Are you sure you want to delete {{food_item.1}}?');"
+                        type="submit"
+                        name="action"
+                        value="delete"
+                    >
+                        Delete
+                    </button>
+                </form>
+            </td>
+        </tr>
+    {% endfor %}
+</table>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+{% if request.session.role == 'donor' %}
+    <h2>Donating As: {{ request.session.name }}</h2>
+{% else %}
+    <h2>Anonymous Donation</h2>
+{% endif %}
+
+<form method="post">
+    {% csrf_token %}
+    <div>
+        <label for="donation_amt">Donate $</label>
+        <input type="text" name="donation_amt" id="id_donation_amt">
+    </div>
+    <br>
+    <div>
+        <label for="cc_type">Credit Card Type</label>
+        <select name="cc_type" id="id_cc_type">
+            <option value="amex">American Express</option>
+            <option value="mastercard">Mastercard</option>
+            <option value="visa">Visa</option>
+        </select>
+    </div>
+    <div>
+        <label for="cc_number">Credit Card Number</label>
+        <input type="text" name="cc_number" id="id_cc_number">
+    </div>
+    <div>
+        <label for="cc_expiry">Credit Card Expiry Date</label>
+        <input type="text" name="cc_expiry" id="id_cc_expiry" placeholder="MM/YY">
+    </div>
+    <div>
+        <label for="cc_cvv">CVV</label>
+        <input type="text" name="cc_cvv" id="id_cc_cvv">
+    </div>
+
+    <br>
+    <button type="submit" value="donate">Donate</button>
+</form>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+{% if 'role' in request.session %}
+<h1>Welcome back, {{ request.session.name }}!</h1>
+{% else %}
+<h1>Home Page</h1>
+{% endif %}
+
+<h2>Top Donors This Month</h2>
+<ol>
+    {% for donor in top_donors_thismth %}
+        <li>{{ donor.0 }}: ${{ donor.1 }}</li>
+    {% endfor %}
+</ol>
+
+<h2>All-Time Top Donors</h2>
+<ol>
+    {% for donor in top_donors_alltime %}
+        <li>{{ donor.0 }}: ${{ donor.1 }}</li>
+    {% endfor %}
+</ol>
+{% endblock %}

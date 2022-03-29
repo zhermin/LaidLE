@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<br><br>
+<a href="/merchant"><button>Back</button></a>
+
+<p style="color: red">{{ status|safe }}</p>
+
+<h2>Adding New Food Item</h2>
+<form method="POST">
+    {% csrf_token %}
+    <div>
+        <label for="food_name">Food Name</label>
+        <input type="text" name="food_name">
+    </div>
+    <div>
+        <label for="food_desc">Description</label>
+        <br>
+        <textarea name="food_desc"cols="30" rows="10"></textarea>
+    </div>
+    <br>
+    <button type="submit">Confirm Add</button>
+</form>
+{% endblock %}

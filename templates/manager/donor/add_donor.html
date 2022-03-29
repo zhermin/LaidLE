@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block auth %}
+<a href="/manager/account"><button>Account</button></a>
+<a href="/"><button>Log Out</button></a>
+<br><br>
+<a href="/manager"><button>Back</button></a>
+{% endblock %}
+
+{% block content %}
+<p style="color: red">{{ status|safe }}</p>
+
+<h2>Register New Donor</h2>
+<form method="POST">
+    {% csrf_token %}
+    <div>
+        <label for="name">Full Name</label>
+        <input type="text" name="name">
+    </div>
+    <div>
+        <label for="email">Email</label>
+        <input type="email" name="email" id="">
+    </div>
+    <div>
+        <label for="password">Password</label>
+        <input type="password" name="password" id="">
+    </div>
+    <br>
+    <button type="submit">Register</button>
+</form>
+{% endblock %}
