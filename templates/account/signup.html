@@ -1,21 +1,31 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1>Donor Signup Page</h1>
-<form method="POST">
-    {% csrf_token %}
-    <div class="mb-3">
-        <label for="signup_name" class="form-label">Full Name</label>
-        <input type="text" name="donor_name" class="form-control" id="signup_name" aria-describedby="emailHelp">
-    </div>
-    <div class="mb-3">
-        <label for="signup_email" class="form-label">Email</label>
-        <input type="email" name="donor_email" class="form-control" id="signup_email" aria-describedby="emailHelp">
-    </div>
-    <div class="mb-3">
-        <label for="signup_password" class="form-label">Password</label>
-        <input type="password" name="donor_pw" class="form-control" id="signup_password">
-    </div>
-    <button type="submit" value="login" class="btn btn-primary">Submit</button>
-</form>
+<section class="p-5 w-50 mx-auto">
+    <h1>Register as a Donor</h1>
+    <p style="color: red">{{ status|safe }}</p>
+
+    <form method="POST">
+        {% csrf_token %}
+        <div class="row mb-3">
+            <label for="signup_name" class="col-sm-3 col-form-label">Full Name</label>
+            <div class="col-sm-9">
+                <input type="text" name="donor_name" class="form-control" id="signup_name">
+            </div>
+        </div>
+        <div class="row mb-3">
+            <label for="signup_email" class="col-sm-3 col-form-label">Email</label>
+            <div class="col-sm-9">
+                <input type="email" name="donor_email" class="form-control" id="signup_email">
+            </div>
+        </div>
+        <div class="row mb-3">
+            <label for="signup_password" class="col-sm-3 col-form-label">Password</label>
+            <div class="col-sm-9">
+                <input type="password" name="donor_pw" class="form-control" id="signup_password">
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Sign Up</button>
+    </form>
+</section>
 {% endblock %}

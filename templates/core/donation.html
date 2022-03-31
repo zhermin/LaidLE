@@ -1,42 +1,48 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<section class="p-5 w-50 mx-auto">
+    {% if request.session.role == 'donor' %}
+        <h1>Donating As: {{ request.session.name }}</h1>
+    {% else %}
+        <h1>Anonymous Donation</h2>
+    {% endif %}
+    <p style="color: red">{{ status|safe }}</p>
 
-{% if request.session.role == 'donor' %}
-    <h2>Donating As: {{ request.session.name }}</h2>
-{% else %}
-    <h2>Anonymous Donation</h2>
-{% endif %}
-
-<form method="post">
-    {% csrf_token %}
-    <div>
-        <label for="donation_amt">Donate $</label>
-        <input type="text" name="donation_amt" id="id_donation_amt">
-    </div>
-    <br>
-    <div>
-        <label for="cc_type">Credit Card Type</label>
-        <select name="cc_type" id="id_cc_type">
-            <option value="amex">American Express</option>
-            <option value="mastercard">Mastercard</option>
-            <option value="visa">Visa</option>
-        </select>
-    </div>
-    <div>
-        <label for="cc_number">Credit Card Number</label>
-        <input type="text" name="cc_number" id="id_cc_number">
-    </div>
-    <div>
-        <label for="cc_expiry">Credit Card Expiry Date</label>
-        <input type="text" name="cc_expiry" id="id_cc_expiry" placeholder="MM/YY">
-    </div>
-    <div>
-        <label for="cc_cvv">CVV</label>
-        <input type="text" name="cc_cvv" id="id_cc_cvv">
-    </div>
-
-    <br>
-    <button type="submit" value="donate">Donate</button>
-</form>
+    <form method="POST" class="row g-3">
+        {% csrf_token %}
+        <div class="col-12">
+            <label for="donation_amt" class="form-label">Your Donation</label>
+            <input type="text" class="form-control" name="donation_amt" id="donation_amt" placeholder="$">
+        </div>
+        <div class="col-12">
+            <label for="cc_type" class="col-form-label">Card Type</label>
+            <select name="cc_type" id="cc_type" class="form-select">
+                <option value="amex">American Express</option>
+                <option value="mastercard">Mastercard</option>
+                <option value="visa">Visa</option>
+            </select>
+        </div>
+        <div class="col-12">
+            <label for="cc_number" class="form-label">Card Number</label>
+            <input type="text" class="form-control" name="cc_number" id="cc_number">
+        </div>
+        <div class="col-12">
+            <label for="cc_name" class="form-label">Card Owner</label>
+            <input type="text" class="form-control" name="cc_name" id="cc_name">
+        </div>
+        <div class="col-md-6">
+            <label for="cc_expiry" class="form-label">Expiry</label>
+            <input type="text" class="form-control" name="cc_expiry" id="cc_expiry" placeholder="MM/YY">
+        </div>
+        <div class="col-md-6">
+            <label for="cc_cvv" class="form-label">CVV</label>
+            <input type="text" class="form-control" name="cc_cvv" id="cc_cvv" placeholder="***">
+        </div>
+        <div class="col-12"></div>
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary">Donate!</button>
+        </div>
+    </form>
+</section>
 {% endblock %}

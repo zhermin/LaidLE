@@ -1,37 +1,88 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">
+    <!-- Custom CSS -->
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 
-    <title>LaidLE — Crowdfunding Food for the In-Betweeners</title>
+    <title>LaidLE — Crowdfunding Meals for the In-Betweeners</title>
 </head>
+
 <body>
-    <nav class="navbar navbar-light bg-light">
-        <div class="container-fluid">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top px-0 py-3">
+        <div class="container">
             <a href="/" class="navbar-brand">LaidLE</a>
-            <form class="d-flex">
-                {% if request.session.role %}
-                    <a href="/{{ request.session.role }}/account" class="nav-link">Account</button></a>
-                    <a href="/logout" class="nav-link">Log Out</a>
-                {% else %}
-                    <a href="/donation" class="btn btn-outline-primary">DONATE NOW</a>
-                    <a href="/signup" class="nav-link">SIGN UP</a>
-                    <a href="/login" class="nav-link">LOG IN</a>
-                {% endif %}
-            </form>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navmenu">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navmenu">
+                <ul class="navbar-nav ms-auto">
+                    {% if request.session.role %}
+                    {% if request.session.role == 'donor' %}
+                    <li class="nav-item"><a href="/donation" class="btn btn-outline-primary mx-2">DONATE NOW</a></li>
+                    {% endif %}
+                    <li class="nav-item"><a href="/{{ request.session.role }}/account"
+                            class="nav-link">Account</button></a></li>
+                    <li class="nav-item"><a href="/logout" class="nav-link">Log Out</a></li>
+                    {% else %}
+                    <li class="nav-item"><a href="/donation" class="btn btn-outline-primary mx-2">DONATE NOW</a></li>
+                    <li class="nav-item"><a href="/signup" class="nav-link">SIGN UP</a></li>
+                    <li class="nav-item"><a href="/login" class="nav-link">LOG IN</a></li>
+                    {% endif %}
+                </ul>
+            </div>
         </div>
     </nav>
-    <div class="container">
-        {% block content %}
-        {% endblock %}
-    </div>
+
+    {% block content %}
+    {% endblock %}
+
+    <!-- Footer -->
+    <footer class="pt-5 pb-3 bg-dark text-light position-relative">
+        <div class="container text-center">
+            <div class="row">
+                <div class="col-md-4 col-lg-4 mx-auto mt-3">
+                    <h5 class="mb-3 font-weight-bold">About LaidLE</h5>
+                    <hr class="mb-3">
+                    <p class="text-start px-3">LaidLE is a crowdfunding platform for the In-Betweeners. We are a group of
+                        individuals who are passionate about food and want to help others in need.</p>
+                    <p class="text-start px-3 mt-3">Find out how you can help make someone's day with just a small token of
+                        kindness.</p>
+                </div>
+                <div class="col-md-8 mx-auto mt-3">
+                    <h5 class="mb-3 font-weight-bold">Find Us</h5>
+                    <hr class="mb-3">
+                    <iframe
+                        src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d18974.020996062925!2d103.77135166799081!3d1.2967162039869482!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x488d08d6c1f88d6b!2sNational%20University%20of%20Singapore!5e0!3m2!1sen!2ssg!4v1648701028141!5m2!1sen!2ssg"
+                        width="600" height="200" style="border:0;" allowfullscreen="" loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade"></iframe>
+                </div>
+            </div>
+            <div class="mt-5">
+                <p class="lead fs-6">Copyright &copy; 2022 LaidLE</p>
+                <a href="#" class="position-absolute bottom-0 end-0 p-5 text-light">
+                    <i class="bi bi-arrow-up-circle h1"></i>
+                </a>
+            </div>
+        </div>
+    </footer>
 
     <!-- Bootstrap JavaScript Bundle -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
+        crossorigin="anonymous"></script>
 </body>
+
 </html>

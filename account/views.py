@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.db import connection
+from django.db import IntegrityError, connection
 
 # Create your views here.
 def login_view(request):
@@ -41,15 +41,21 @@ def logout_view(request):
 def signup_view(request):
 
     if request.POST:
-        with connection.cursor() as cursor:
-            cursor.execute("""
-                INSERT INTO donor (donor_name, donor_email, donor_pw)
-                VALUES (%(donor_name)s, %(donor_email)s, crypt(%(donor_pw)s, gen_salt('bf')));
-            """, {
-                'donor_name': request.POST['donor_name'],
-                'donor_email': request.POST['donor_email'],
-                'donor_pw': request.POST['donor_pw'],
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    INSERT INTO donor (donor_name, donor_email, donor_pw)
+                    VALUES (%(donor_name)s, %(donor_email)s, crypt(%(donor_pw)s, gen_salt('bf')));
+                """, {
+                    'donor_name': request.POST['donor_name'],
+                    'donor_email': request.POST['donor_email'],
+                    'donor_pw': request.POST['donor_pw'],
+                })
+                return redirect('login')
+        except IntegrityError as e:
+            print(dir(e))
+            return render(request, 'account/signup.html', {
+                'status': e.__cause__,
             })
-            return redirect('login')
 
     return render(request, 'account/signup.html')

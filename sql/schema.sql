@@ -6,17 +6,17 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp"; -- FOR GENERATING RANDOM UUID
 CREATE TABLE IF NOT EXISTS donor (
 	donor_name VARCHAR NOT NULL CHECK (LENGTH(TRIM(donor_name)) > 0),
 	donor_email VARCHAR PRIMARY KEY CHECK (LENGTH(TRIM(donor_email)) > 0),
-	donor_pw VARCHAR NOT NULL CHECK (LENGTH(TRIM(donor_email)) > 2), -- TODO: SET TO >5 EVENTUALLY
+	donor_pw VARCHAR NOT NULL, -- not possible to check length after hashing, have to check from frontside
+	donor_pic VARCHAR NOT NULL DEFAULT 'https://robohash.org/laidle_donor',
 	coin INT NOT NULL DEFAULT 0 CHECK (coin >= 0)
 );
-
-SELECT LENGTH(TRIM(' '));
 
 -- BENEFICIARY ENTITY TABLE
 CREATE TABLE IF NOT EXISTS beneficiary (
 	benef_name VARCHAR NOT NULL CHECK (LENGTH(TRIM(benef_name)) > 0),
 	benef_email VARCHAR PRIMARY KEY CHECK (LENGTH(TRIM(benef_email)) > 0),
-	benef_pw VARCHAR NOT NULL CHECK (LENGTH(TRIM(benef_pw)) > 7),
+	benef_pw VARCHAR NOT NULL,
+	benef_pic VARCHAR NOT NULL DEFAULT 'https://robohash.org/laidle_beneficiary',
 	household_income DECIMAL(5,2) NOT NULL CHECK (household_income >= 0),
 	benef_location VARCHAR NOT NULL
 	CONSTRAINT benef_location
@@ -32,7 +32,8 @@ CREATE TABLE IF NOT EXISTS beneficiary (
 CREATE TABLE IF NOT EXISTS merchant (
 	merchant_name VARCHAR NOT NULL CHECK (LENGTH(TRIM(merchant_name)) > 0),
 	merchant_email VARCHAR PRIMARY KEY CHECK (LENGTH(TRIM(merchant_email)) > 0),
-	merchant_pw VARCHAR NOT NULL CHECK (LENGTH(TRIM(merchant_pw)) > 7),
+	merchant_pw VARCHAR NOT NULL,
+	merchant_pic VARCHAR NOT NULL DEFAULT 'https://robohash.org/laidle_merchant',
 	merchant_location VARCHAR NOT NULL
 	CONSTRAINT merchant_location 
 	CHECK( merchant_location = 'North' 
