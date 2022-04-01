@@ -1,0 +1,80 @@
+{% extends 'manager/manager_base.html' %}
+
+{% block manager_content %}
+<nav>
+    <ul class="nav nav-tabs">
+        <li class="nav-item">
+            <a class="nav-link" href="/manager">Donations</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="beneficiary">Beneficiaries</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="merchant">Merchants</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="food">Food</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link active" href="donor">Donors</a>
+        </li>
+    </ul>
+</nav>
+
+<div class="p-3 bg-white border border-top-0">
+    <a href="donor/add" class="btn btn-warning mb-3">Register New Donor</a>
+    <table class="table table-sm table-striped table-hover border align-middle">
+        <thead>
+            <th>#</th>
+            <th>Full Name</th>
+            <th>Email</th>
+            <th>Coin</th>
+            <th style="width: 15%">Actions</th>
+        </thead>
+        {% for donor in donors %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ donor.0 }}</td>
+                <td>{{ donor.1 }}</td>
+                <td>{{ donor.2 }}</td>
+                <td class="d-flex">
+                    <a href="donor/edit/{{ donor.1 }}" class="btn btn-primary btn-sm w-50 mx-1">Edit</a>
+                    <form method="POST" style="display: inline" class="w-50 mx-1">
+                        {% csrf_token %}
+                        <input type="hidden" name="email" value="{{ donor.1 }}" />
+                        <button
+                            onclick="return confirm('Are you sure you want to delete user {{ donor.1 }}?');"
+                            class="btn btn-danger btn-sm w-100"
+                            type="submit"
+                            name="action"
+                            value="delete"
+                        >
+                            Delete
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+    <nav>
+        <ul class="pagination justify-content-center mt-4">
+            <li class="page-item {% if not donors.has_previous %} disabled {% endif %}">
+                <a href="?page=1" class="page-link">&laquo First</a>
+            </li>
+            <li class="page-item {% if not donors.has_previous %} disabled {% endif %}">
+                <a href="?page={% if donors.has_previous %}{{ donors.previous_page_number }}{% endif %}"
+                    class="page-link">Previous</a>
+            </li>
+            <li class="page-item disabled"><a class="page-link text-primary">
+                Page {{ donors.number }} of {{ donors.paginator.num_pages }}
+            </a></li>
+            <li class="page-item {% if not donors.has_next %} disabled {% endif %}">
+                <a href="?page={% if donors.has_next %}{{ donors.next_page_number }}{% endif %}"
+                    class="page-link">Next</a></li>
+            <li class="page-item {% if not donors.has_next %} disabled {% endif %}">
+                <a href="?page={{ donors.paginator.num_pages }}" class="page-link">Last &raquo</a>
+            </li>
+        </ul>
+    </nav>
+</div>
+{% endblock %}

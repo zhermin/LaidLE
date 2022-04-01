@@ -1,51 +1,78 @@
+--- TABLE POPULATION RUNNING ORDER
+-- 1. run everything until ~line 300
+-- 2. run the other sql files person/beneficiary/donor/merchant/food/reward/donation.sql
+-- 3. refer below to continue running the other 2 queries at the bottom
+
 -- POSTGRES EXTENSIONS
 CREATE EXTENSION IF NOT EXISTS pgcrypto; -- FOR PASSWORD HASHING
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp"; -- FOR GENERATING RANDOM UUID
 
+----------------------
+-- ENTITY TABLES
+----------------------
+
+-- PERSON ENTITY TABLE
+CREATE TABLE IF NOT EXISTS person (
+	name VARCHAR NOT NULL CHECK (LENGTH(TRIM(name)) > 0),
+	email VARCHAR PRIMARY KEY CHECK (LENGTH(TRIM(email)) > 0),
+	password VARCHAR NOT NULL, -- not possible to check length of hashed password, must check from frontend
+	pic VARCHAR NOT NULL DEFAULT 'https://robohash.org/laidle',
+	role VARCHAR NOT NULL
+	CONSTRAINT role
+	CHECK (role = 'donor'
+        OR role = 'merchant'
+        OR role = 'beneficiary'
+        OR role = 'manager')
+);
+
 -- DONOR ENTITY TABLE
 CREATE TABLE IF NOT EXISTS donor (
-	donor_name VARCHAR NOT NULL CHECK (LENGTH(TRIM(donor_name)) > 0),
-	donor_email VARCHAR PRIMARY KEY CHECK (LENGTH(TRIM(donor_email)) > 0),
-	donor_pw VARCHAR NOT NULL, -- not possible to check length after hashing, have to check from frontside
-	donor_pic VARCHAR NOT NULL DEFAULT 'https://robohash.org/laidle_donor',
-	coin INT NOT NULL DEFAULT 0 CHECK (coin >= 0)
+	email VARCHAR UNIQUE NOT NULL CHECK (LENGTH(TRIM(email)) > 0),
+	coin INT NOT NULL DEFAULT 0 CHECK (coin >= 0),
+	FOREIGN KEY (email) REFERENCES person(email)
+		ON UPDATE CASCADE ON DELETE CASCADE
+		DEFERRABLE INITIALLY DEFERRED
 );
 
 -- BENEFICIARY ENTITY TABLE
 CREATE TABLE IF NOT EXISTS beneficiary (
-	benef_name VARCHAR NOT NULL CHECK (LENGTH(TRIM(benef_name)) > 0),
-	benef_email VARCHAR PRIMARY KEY CHECK (LENGTH(TRIM(benef_email)) > 0),
-	benef_pw VARCHAR NOT NULL,
-	benef_pic VARCHAR NOT NULL DEFAULT 'https://robohash.org/laidle_beneficiary',
+	email VARCHAR UNIQUE NOT NULL CHECK (LENGTH(TRIM(email)) > 0),
 	household_income DECIMAL(5,2) NOT NULL CHECK (household_income >= 0),
-	benef_location VARCHAR NOT NULL
-	CONSTRAINT benef_location
-	CHECK( benef_location = 'North'
-		OR benef_location = 'South'
-		OR benef_location = 'East'
-		OR benef_location = 'West'
-		OR benef_location = 'Central'
-	)
+	location VARCHAR NOT NULL
+	CONSTRAINT location
+	CHECK( location = 'North'
+		OR location = 'South'
+		OR location = 'East'
+		OR location = 'West'
+		OR location = 'Central'
+	),
+	FOREIGN KEY (email) REFERENCES person(email)
+		ON UPDATE CASCADE ON DELETE CASCADE
+		DEFERRABLE INITIALLY DEFERRED
 );
 
 -- MERCHANT ENTITY TABLE
 CREATE TABLE IF NOT EXISTS merchant (
-	merchant_name VARCHAR NOT NULL CHECK (LENGTH(TRIM(merchant_name)) > 0),
-	merchant_email VARCHAR PRIMARY KEY CHECK (LENGTH(TRIM(merchant_email)) > 0),
-	merchant_pw VARCHAR NOT NULL,
-	merchant_pic VARCHAR NOT NULL DEFAULT 'https://robohash.org/laidle_merchant',
-	merchant_location VARCHAR NOT NULL
-	CONSTRAINT merchant_location 
-	CHECK( merchant_location = 'North' 
-		OR merchant_location = 'South' 
-		OR merchant_location = 'East'
-		OR merchant_location = 'West'
-		OR merchant_location = 'Central'
-	)
+	email VARCHAR UNIQUE NOT NULL CHECK (LENGTH(TRIM(email)) > 0),
+	location VARCHAR NOT NULL
+	CONSTRAINT location
+	CHECK( location = 'North'
+		OR location = 'South'
+		OR location = 'East'
+		OR location = 'West'
+		OR location = 'Central'
+	),
+	FOREIGN KEY (email) REFERENCES person(email)
+		ON UPDATE CASCADE ON DELETE CASCADE
+		DEFERRABLE INITIALLY DEFERRED
 );
 
 -- FOOD ENTITY TABLE
 CREATE TABLE IF NOT EXISTS food (
+	merchant_email VARCHAR NOT NULL CHECK (LENGTH(TRIM(food_name)) > 0),
+	FOREIGN KEY (merchant_email) REFERENCES merchant(email)
+		ON UPDATE CASCADE ON DELETE CASCADE
+		DEFERRABLE INITIALLY DEFERRED,
 	food_sn VARCHAR PRIMARY KEY
 	    DEFAULT uuid_generate_v4()
         CHECK (LENGTH(TRIM(food_sn)) > 0),
@@ -53,17 +80,9 @@ CREATE TABLE IF NOT EXISTS food (
 	food_desc VARCHAR NOT NULL CHECK (LENGTH(TRIM(food_desc)) > 0)
 );
 
--- PRODUCED_BY RELATIONSHIP TABLE
-CREATE TABLE IF NOT EXISTS produced_by (
-	merchant_email VARCHAR,
-	food_sn VARCHAR UNIQUE NOT NULL,
-	FOREIGN KEY (merchant_email) REFERENCES merchant(merchant_email)
-		ON UPDATE CASCADE ON DELETE CASCADE
-		DEFERRABLE INITIALLY DEFERRED,
-	FOREIGN KEY (food_sn) REFERENCES food(food_sn)
-		ON UPDATE CASCADE ON DELETE CASCADE
-		DEFERRABLE INITIALLY DEFERRED
-);
+----------------------
+-- INTERACTION TABLES
+----------------------
 
 -- DONATIONS RELATIONSHIP TABLE
 CREATE TABLE IF NOT EXISTS donation (
@@ -72,80 +91,91 @@ CREATE TABLE IF NOT EXISTS donation (
 	merchant_email VARCHAR,
 	donation_amt NUMERIC NOT NULL CHECK (donation_amt >= 0),
 	PRIMARY KEY (donation_date, donor_email, merchant_email),
-	FOREIGN KEY (donor_email) REFERENCES donor(donor_email),
-	FOREIGN KEY (merchant_email) REFERENCES merchant(merchant_email)
+	FOREIGN KEY (donor_email) REFERENCES donor(email),
+	FOREIGN KEY (merchant_email) REFERENCES merchant(email)
 );
 
--- FUND TRIGGER AFTER EVERY NEW DONATION
-CREATE OR REPLACE FUNCTION update_fund() RETURNS TRIGGER AS
+-- TRIGGERS TO UPDATE COIN COUNT
+CREATE OR REPLACE FUNCTION update_coin() RETURNS TRIGGER AS
 $BODY$
 BEGIN
-	IF EXISTS (SELECT (1) FROM fund WHERE year_month = DATE_TRUNC('MONTH', NEW.donation_date))
-	THEN
-		UPDATE fund SET (total, quotient, remainder) = (
-        SELECT SUM(d.donation_amt), TRUNC(SUM(d.donation_amt)/5), MOD(SUM(d.donation_amt),5)
-        FROM donation d
-        GROUP BY DATE_TRUNC('MONTH', d.donation_date) 
-        HAVING DATE_TRUNC('MONTH', d.donation_date) = DATE_TRUNC('MONTH', NEW.donation_date)
-    ) WHERE year_month = DATE_TRUNC('MONTH', NEW.donation_date);
-	ELSE 
-		INSERT INTO fund VALUES (DATE_TRUNC('MONTH', NEW.donation_date), NEW.donation_amt, TRUNC(NEW.donation_amt/5), MOD(NEW.donation_amt,5));
+	IF (NEW.donor_email <> 'anonymous')
+    THEN
+        UPDATE donor
+		SET coin = donor.coin + TRUNC(NEW.donation_amt/1)
+        WHERE donor.email = NEW.donor_email;
+
 	END IF;
-	RETURN NEW;
+	RETURN NULL;
 END;
 $BODY$
 language plpgsql;
 
-CREATE TRIGGER trig_update_acc
+CREATE TRIGGER update_coin
 AFTER INSERT ON donation
 FOR EACH ROW
-EXECUTE PROCEDURE update_fund();
+EXECUTE PROCEDURE update_coin();
 
--- FUND ENTITY TABLE
-CREATE TABLE IF NOT EXISTS fund (
-	year_month DATE PRIMARY KEY,
-	total NUMERIC NOT NULL DEFAULT 0 CHECK (total >= 0),
-	quotient NUMERIC NOT NULL DEFAULT 0 CHECK (quotient >= 0),
-	remainder NUMERIC NOT NULL DEFAULT 0 CHECK (remainder >= 0)
-);
+-- FUND VIEW
+-- RECURSION FOR FUND
+-- CREATE BASELINE TABLE
+CREATE VIEW fund_temp AS
+SELECT DATE_TRUNC('MONTH', d.donation_date) AS year_month, SUM(d.donation_amt) AS month_total
+FROM donation d
+GROUP BY year_month
+ORDER BY year_month;
 
--- RANDOMLY POPULATE DONATION TABLE, FOR DEMO
-INSERT INTO donation
-SELECT 	timestamp '2022-02-01 20:00:00' + ROUND(RANDOM()::NUMERIC,2) * (timestamp '2014-02-01 00:00:00' - timestamp '2014-01-01 00:00:00'),
-		d.donor_email, m.merchant_email, ROUND((RANDOM()*10)::NUMERIC,2)
-FROM donor d, merchant m
-ORDER BY RANDOM() LIMIT 10;
+-- CREATE RECURSION
+CREATE VIEW fund_view AS
+WITH RECURSIVE fund AS (
+	SELECT 	year_month, month_total, CAST(0 AS NUMERIC) AS prev_remainder, TRUNC(month_total/5) AS quotient,
+			MOD(month_total,5) AS remainder
+ 	FROM fund_temp ft
+	WHERE ft.year_month = (
+		SELECT MIN(year_month)
+		FROM fund_temp
+	)
+	UNION ALL
+	SELECT ft.year_month, ft.month_total, fd.remainder,
+	TRUNC((ft.month_total + fd.remainder)/5) AS quotient,
+	MOD(ft.month_total+fd.remainder,5) AS remainder
+	FROM fund_temp ft, fund fd
+ 	WHERE ft.year_month = fd.year_month + INTERVAL '1 month'
+) SELECT *
+  FROM fund;
 
 -- COUPON RELATIONSHIP TABLE
 CREATE TABLE IF NOT EXISTS coupon (
 	coupon_sn VARCHAR
 	    DEFAULT uuid_generate_v4()
         CHECK (LENGTH(TRIM(coupon_sn)) > 0),
-	issue_date DATE NOT NULL 
+	issue_date DATE NOT NULL
+	    DEFAULT NOW()
 	    CHECK (issue_date < expiry_date),
 	expiry_date DATE NOT NULL
+	    DEFAULT NOW() + INTERVAL '1 MONTH'
 	    CHECK (expiry_date > issue_date),
 	benef_email VARCHAR NOT NULL,
 	PRIMARY KEY (coupon_sn, benef_email),
-	FOREIGN KEY (benef_email) REFERENCES beneficiary(benef_email)
+	FOREIGN KEY (benef_email) REFERENCES beneficiary(email)
 		ON UPDATE CASCADE ON DELETE CASCADE
 		DEFERRABLE INITIALLY DEFERRED
 );
 
+-- RANDOMLY POPULATE DONATION TABLE, FOR DEMO
+INSERT INTO donation
+SELECT 	timestamp '2022-02-01 20:00:00' + ROUND(RANDOM()::NUMERIC,2) * (timestamp '2014-02-01 00:00:00' - timestamp '2014-01-01 00:00:00'),
+		d.email, m.email, ROUND((RANDOM()*10)::NUMERIC,2)
+FROM donor d, merchant m
+ORDER BY RANDOM() LIMIT 10;
+
 -- CHECK RECIPIENT QUEUE
-SELECT b.benef_email, b.household_income, COUNT(c.benef_email)
+CREATE VIEW recipient_queue AS
+SELECT b.email, b.household_income, COUNT(c.benef_email)
 FROM beneficiary b LEFT JOIN coupon c
-ON b.benef_email = c.benef_email 
-GROUP BY b.benef_email, b.household_income
+ON b.email = c.benef_email
+GROUP BY b.email, b.household_income
 ORDER BY COUNT(c.benef_email), b.household_income;
-
-SELECT *
-FROM coupon c
-WHERE c.issue_date = DATE_TRUNC('MONTH', CURRENT_TIMESTAMP);
-
-SELECT *
-FROM coupon c
-WHERE c.issue_date = TIMESTAMP '2022-04-01';
 
 -- CLAIM RELATIONSHIP TABLE
 CREATE TABLE IF NOT EXISTS claim (
@@ -190,11 +220,6 @@ BEGIN
     THEN RAISE NOTICE 'This coupon does not belong to you.';
     RETURN NULL;
 
-	ELSE 
-		UPDATE coupon
-		SET claimed = TRUE
-		WHERE (NEW.coupon_sn = coupon.coupon_sn AND NEW.benef_email = coupon.benef_email);
-
 	END IF;
 	RETURN NEW;
 END;
@@ -206,67 +231,106 @@ BEFORE INSERT ON claim
 FOR EACH ROW
 EXECUTE PROCEDURE check_claim();
 
--- MEMBER/ROLE TESTING, CAN REMOVE
--- CREATE TABLE IF NOT EXISTS role (
---     role_name VARCHAR PRIMARY KEY
--- 	CONSTRAINT role_name
--- 	CHECK( role_name = 'anonymous'
--- 		OR role_name = 'donor'
--- 		OR role_name = 'beneficiary'
--- 		OR role_name = 'merchant'
--- 		OR role_name = 'manager'
--- 	)
--- );
+--- REWARD ENTITY TABLE
+CREATE TABLE IF NOT EXISTS reward (
+	reward_sn VARCHAR PRIMARY KEY
+	    DEFAULT uuid_generate_v4()
+        CHECK (LENGTH(TRIM(reward_sn)) > 0),
+	reward_name VARCHAR NOT NULL CHECK (LENGTH(TRIM(reward_name)) > 0),
+	reward_desc VARCHAR NOT NULL CHECK (LENGTH(TRIM(reward_desc)) > 0),
+	reward_price INT NOT NULL CHECK (reward_price > 0),
+	reward_qty INT NOT NULL CHECK (reward_qty >= 0) DEFAULT 0
+);
 
--- CREATE TABLE IF NOT EXISTS member (
---     email VARCHAR NOT NULL,
---     role_name VARCHAR NOT NULL,
---     FOREIGN KEY (email)
---     REFERENCES donor(donor_email), beneficiary(benef_email), merchant(merchant_email)
--- );
---
--- CREATE TABLE IF NOT EXISTS anonymous (
---     one_row_only BOOL PRIMARY KEY DEFAULT TRUE,
---     donor_email VARCHAR UNIQUE NOT NULL DEFAULT 'anonymous',
---     merchant_email VARCHAR UNIQUE NOT NULL DEFAULT 'anonymous'
---     CONSTRAINT one_row_only CHECK (one_row_only)
--- );
--- INSERT INTO anonymous DEFAULT VALUES;
--- INSERT INTO anonymous VALUES (FALSE, 'a', 'b');
--- DELETE FROM anonymous;
+--- REWARD ENTITY TABLE
+CREATE TABLE IF NOT EXISTS redemption (
+	redeem_date DATE NOT NULL DEFAULT NOW(),
+	reward_sn VARCHAR NOT NULL CHECK (LENGTH(TRIM(reward_sn)) > 0),
+	donor_email VARCHAR NOT NULL CHECK (LENGTH(TRIM(donor_email)) > 0),
+	FOREIGN KEY (donor_email) REFERENCES donor(email)
+		ON UPDATE CASCADE ON DELETE CASCADE
+		DEFERRABLE INITIALLY DEFERRED,
+	FOREIGN KEY (reward_sn) REFERENCES reward(reward_sn)
+		ON UPDATE CASCADE ON DELETE CASCADE
+		DEFERRABLE INITIALLY DEFERRED
+);
 
---- TABLE POPULATION RUNNING ORDER
--- 0. run everything on top sequentially
--- 1. donor.sql
--- 2. merchant.sql
--- 3. beneficiary.sql
--- 4. donation.sql
--- 5. food_produced_by.sql (uuid must be copied from food table since this is manual)
--- 6. run coupon allocation below first
--- 7. check uuid from coupon table then populate claims table (only 2nd uuid should appear in claims)
+-- TRIGGER TO CHECK REDEMPTION AND UPDATE REWARDS
+CREATE OR REPLACE FUNCTION check_redemption() RETURNS TRIGGER AS
+$BODY$
+BEGIN
+	IF EXISTS (
+        SELECT (1)
+        FROM reward, donor
+        WHERE NEW.reward_sn = reward.reward_sn
+		AND	NEW.donor_email = donor.email
+		AND donor.coin < reward.reward_price )
+    THEN RAISE NOTICE 'You do not have enough coins. Donate more!';
+    RETURN NULL;
+
+	ELSIF EXISTS (
+        SELECT (1)
+        FROM reward
+        WHERE NEW.reward_sn = reward.reward_sn
+		AND	reward.reward_qty = 0 )
+    THEN RAISE NOTICE 'This reward is out of stock!';
+    RETURN NULL;
+
+	ELSIF EXISTS (
+        SELECT (1)
+        FROM reward, donor
+        WHERE NEW.reward_sn = reward.reward_sn
+		AND	NEW.donor_email = donor.email
+		AND donor.coin >= reward.reward_price
+		AND reward.reward_qty <> 0)
+	THEN
+		RAISE NOTICE 'Enjoy!';
+        UPDATE donor
+		SET coin = coin - (SELECT reward_price
+						   FROM reward
+						   WHERE reward.reward_sn = NEW.reward_sn)
+	 	WHERE donor_email = NEW.donor_email;
+		UPDATE reward SET reward_qty = reward_qty - 1 WHERE reward_sn = NEW.reward_sn;
+
+	END IF;
+	RETURN NULL;
+END;
+$BODY$
+language plpgsql;
+
+CREATE TRIGGER check_redemption
+BEFORE INSERT ON redemption
+FOR EACH ROW
+EXECUTE PROCEDURE check_redemption();
+
+--- [STOP HERE] CONT. TABLE POPULATION RUNNING ORDER
+-- 0. run everything on top and the other sql files (which you should have already done)
+-- 1. run coupon allocation below first
+-- 2. check uuid from coupon table then populate claims table (only 2nd uuid should appear in claims)
 
 -- COUPON ALLOCATION: FRONTEND CONTROLLED
 INSERT INTO coupon (issue_date, expiry_date, benef_email)
-SELECT	DATE_TRUNC('MONTH', a.year_month + INTERVAL '1 month') AS issue_date,
-		DATE_TRUNC('MONTH', a.year_month + INTERVAL '2 month') AS expiry_date,
+SELECT	DATE_TRUNC('MONTH', f.year_month + INTERVAL '1 MONTH') AS issue_date,
+		DATE_TRUNC('MONTH', f.year_month + INTERVAL '2 MONTH') AS expiry_date,
 		benef_email
-FROM fund a
+FROM fund_view f
 CROSS JOIN LATERAL (
-	SELECT b.benef_email
+	SELECT b.email AS benef_email
 	FROM beneficiary b LEFT JOIN coupon c
-	ON b.benef_email = c.benef_email
-	GROUP BY b.benef_email, b.household_income, a.year_month
-	HAVING a.year_month = DATE_TRUNC('MONTH', TIMESTAMP '2022-03-01')
+	ON b.email = c.benef_email
+	GROUP BY b.email, b.household_income, f.year_month
+	HAVING f.year_month = DATE_TRUNC('MONTH', NOW() - INTERVAL '1 month')
 	ORDER BY COUNT(c.benef_email), b.household_income
-	LIMIT a.quotient
+	LIMIT f.quotient
 ) AS benef_email;
 
--- POPULATE CLAIM TABLE (FILL COUPON_SN MANUALLY)
+-- POPULATE CLAIM TABLE (USE THE FIRST COUPON_SN AND FILL IT IN MANUALLY FOR TESTING)
+INSERT INTO claim (coupon_sn, benef_email, merchant_email, claim_date) values ('7d561d48-2d6e-4fe2-af5e-48607bd7c831', 'kdeetch5@stumbleupon.com', 'malaysian@google.com.au', TIMESTAMP '2022-03-15'); -- NOT ISSUED YET
+INSERT INTO claim (coupon_sn, benef_email, merchant_email, claim_date) values ('7d561d48-2d6e-4fe2-af5e-48607bd7c831', 'gmoylane4@bloomberg.com',  'malaysian@google.com.au', TIMESTAMP '2022-04-15'); -- SN AND BENEF DO NOT MATCH
+INSERT INTO claim (coupon_sn, benef_email, merchant_email, claim_date) values ('7d561d48-2d6e-4fe2-af5e-48607bd7c831', 'kdeetch5@stumbleupon.com', 'malaysian@google.com.au', TIMESTAMP '2022-06-15'); -- EXPIRED
+INSERT INTO claim (coupon_sn, benef_email, merchant_email, claim_date) values ('7d561d48-2d6e-4fe2-af5e-48607bd7c831', 'kdeetch5@stumbleupon.com', 'malaysian@google.com.au', TIMESTAMP '2022-04-15'); -- ONLY THIS SHOULD WORK
+INSERT INTO claim (coupon_sn, benef_email, merchant_email, claim_date) values ('7d561d48-2d6e-4fe2-af5e-48607bd7c831', 'kdeetch5@stumbleupon.com', 'malaysian@google.com.au', TIMESTAMP '2022-05-16'); -- DOUBLE CLAIM ERROR
 
-INSERT INTO claim (coupon_sn, benef_email, claim_date) values ('e361bbda-b567-4170-a576-a6c78a40bc38', 'kdeetch5@stumbleupon.com', TIMESTAMP '2022-03-15'); -- [1]
-INSERT INTO claim (coupon_sn, benef_email, claim_date) values ('e361bbda-b567-4170-a576-a6c78a40bc38', 'kdeetch5@stumbleupon.com', TIMESTAMP '2022-05-15'); -- [1]
-INSERT INTO claim (coupon_sn, benef_email, claim_date) values ('a13676d8-1bdd-4db5-89b8-36804a8f51d0', 'mkilmasterf@mapy.cz', TIMESTAMP '2022-04-15'); -- [2] ONLY THIS UUID SHOULD WORK
-INSERT INTO claim (coupon_sn, benef_email, claim_date) values ('8180cf92-986b-4689-8eda-7aaf2bf021a8', 'lmilbya@buzzfeed.com', TIMESTAMP '2021-03-15'); -- [3]
-INSERT INTO claim (coupon_sn, benef_email, claim_date) values ('8180cf92-986b-4689-8eda-7aaf2bf021a8', 'elisha@buzzfeed.com', TIMESTAMP '2022-04-15'); -- [3]
-
----
+-- TEST MULTIPLE COUPONS
+INSERT INTO coupon (benef_email) VALUES ('kdeetch5@stumbleupon.com');
+INSERT INTO coupon (benef_email) VALUES ('kdeetch5@stumbleupon.com');

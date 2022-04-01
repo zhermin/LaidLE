@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="p-5 w-50 mx-auto">
+    <div class="d-flex">
+        <a href="/manager/beneficiary" class="text-dark"><i class="bi bi-arrow-return-left h2 me-4"></i></a>
+        <h2 class="mb-4">Edit Beneficiary</h2>
+    </div>
+    {% include 'message_box.html' with variable=messages %}
+    <form method="POST" class="row g-3">
+        {% csrf_token %}
+        <input type="hidden" name="food_sn" value="{{ food_item.0 }}">
+        <div class="col-12">
+            <label for="merchant_email" class="form-label">Merchant Email</label>
+            <input type="text" class="form-control" name="merchant_email" id="merchant_email" value="{{ food_item.1 }}" disabled>
+        </div>
+        <div class="col-12">
+            <label for="food_name" class="form-label">Food Name</label>
+            <input type="text" class="form-control" name="food_name" id="food_name" value="{{ food_item.2 }}">
+        </div>
+        <div class="col-12">
+            <label for="food_desc" class="form-label">Food Description</label>
+            <textarea class="form-control" name="food_desc" id="food_desc" rows="5">{{ food_item.3 }}</textarea>
+        </div>
+        <div class="col-12"></div>
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary">Confirm Edit</button>
+        </div>
+    </form>
+</section>
+{% endblock %}

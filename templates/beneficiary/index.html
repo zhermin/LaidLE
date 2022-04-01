@@ -1,31 +1,24 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1>Beneficiary Page</h1>
-<h2>Welcome Beneficiary Terry Tantio!</h2>
-<h3>Coupons: {{ benef_coupon_count }}</h3>
-<h3>You are in the North area</h3>
-<br>
-<h2>Redeem Your Favourite Food!</h2>
-<h4>Showing the stalls nearest to you first</h4>
-<table border="1">
-    <thead>
-        <!-- <th>SN</th> -->
-        <th>Food</th>
-        <th>Description</th>
-        <th>Location</th>
-        <th>Action</th>
-    </thead>
-    {% for food_item in food_items %}
-        <tr>
-            <!-- <td>{{ food_item.0 }}</td> -->
-            <td>{{ food_item.1 }}</td>
-            <td class="card-text">{{ food_item.2 }}</td>
-            <td class="card-text">{{ food_item.3 }}</td>
-            <td>
-                <a href="food/{{ food_item.0 }}"><button>View</button></a>
-            </td>
-        </tr>
-    {% endfor %}
-</table>
+<section class="p-5">
+    <div class="container py-2">
+        <!-- <h2>Welcome Beneficiary Terry Tantio!</h2>
+        <h3>You are in the North area</h3>
+        <br> -->
+        <h1>Redeem Your Favourite Food</h1>
+        <h2>Coupons: {{ coupon_count }}</h2>
+        {% for coupon in coupons %}
+            <h3>{{ coupon.0 }}</h3>
+        {% endfor %}
+        <h4 class="mt-4">Showing the {{ request.session.location }} stalls nearest to you first!</h4>
+        <div class="d-flex flex-row flex-nowrap overflow-auto mt-4">
+            {% include 'beneficiary/food_card.html' with food_items=food_items_near %}
+        </div>
+        <h4 class="mt-5">A little extra travelling required!</h4>
+        <div class="d-flex flex-row flex-nowrap overflow-auto mt-4">
+            {% include 'beneficiary/food_card.html' with food_items=food_items_far %}
+        </div>
+    </div>
+</section>
 {% endblock %}

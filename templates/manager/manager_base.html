@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="p-5 bg-light">
+    <div class="container">
+        <h1 class="mb-4">Manage All Users and Food Items Here</h1>
+        {% include 'message_box.html' with variable=messages %}
+
+        {% block manager_content %}
+        <nav>
+            <ul class="nav nav-tabs">
+                <li class="nav-item">
+                    <a class="nav-link active" href="/manager">Donations</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="beneficiary">Beneficiaries</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="merchant">Merchants</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="food">Food</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="donor">Donors</a>
+                </li>
+            </ul>
+        </nav>
+
+        <div class="p-3 bg-white border border-top-0">
+            <table class="table table-sm table-striped table-hover border align-middle">
+                <thead>
+                    <th>#</th>
+                    <th>Datetime</th>
+                    <th>Donor Email</th>
+                    <th>Merchant Email</th>
+                    <th>Donation</th>
+                </thead>
+                {% for donation in donations %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ donation.0 }}</td>
+                        <td>{{ donation.1 }}</td>
+                        <td>{{ donation.2 }}</td>
+                        <td>${{ donation.3 }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+            <nav>
+                <ul class="pagination justify-content-center mt-4">
+                    <li class="page-item {% if not donations.has_previous %} disabled {% endif %}">
+                        <a href="?page=1" class="page-link">&laquo First</a>
+                    </li>
+                    <li class="page-item {% if not donations.has_previous %} disabled {% endif %}">
+                        <a href="?page={% if donations.has_previous %}{{ donations.previous_page_number }}{% endif %}"
+                            class="page-link">Previous</a>
+                    </li>
+                    <li class="page-item disabled"><a class="page-link text-primary">
+                        Page {{ donations.number }} of {{ donations.paginator.num_pages }}
+                    </a></li>
+                    <li class="page-item {% if not donations.has_next %} disabled {% endif %}">
+                        <a href="?page={% if donations.has_next %}{{ donations.next_page_number }}{% endif %}"
+                            class="page-link">Next</a></li>
+                    <li class="page-item {% if not donations.has_next %} disabled {% endif %}">
+                        <a href="?page={{ donations.paginator.num_pages }}" class="page-link">Last &raquo</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+        {% endblock %}
+</section>
+{% endblock %}

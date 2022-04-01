@@ -2,28 +2,31 @@
 
 {% block content %}
 <section class="p-5 w-50 mx-auto">
-    <h1>Register as a Donor</h1>
-    <p style="color: red">{{ status|safe }}</p>
+    <h1 class="mb-4">Register as a Donor</h1>
+    {% include 'message_box.html' with variable=messages %}
 
     <form method="POST">
         {% csrf_token %}
         <div class="row mb-3">
             <label for="signup_name" class="col-sm-3 col-form-label">Full Name</label>
             <div class="col-sm-9">
-                <input type="text" name="donor_name" class="form-control" id="signup_name">
+                <input type="text" name="name" class="form-control" id="signup_name">
             </div>
         </div>
         <div class="row mb-3">
             <label for="signup_email" class="col-sm-3 col-form-label">Email</label>
             <div class="col-sm-9">
-                <input type="email" name="donor_email" class="form-control" id="signup_email">
+                <input type="email" name="email" class="form-control" id="signup_email">
             </div>
         </div>
         <div class="row mb-3">
             <label for="signup_password" class="col-sm-3 col-form-label">Password</label>
             <div class="col-sm-9">
-                <input type="password" name="donor_pw" class="form-control" id="signup_password">
+                <input type="password" name="password" class="form-control" id="signup_password" minlength="6" required>
             </div>
+        </div>
+        <div class="row mb-3">
+            <label class="col-form-label">Already registered as a donor? Sign in <a href="/login">here</a>.</label>
         </div>
         <button type="submit" class="btn btn-primary">Sign Up</button>
     </form>

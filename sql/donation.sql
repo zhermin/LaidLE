@@ -1,6 +1,6 @@
 INSERT INTO donation
 SELECT 	timestamp '2022-02-25 20:00:00' + ROUND(RANDOM()::NUMERIC,2) * (timestamp '2014-02-01 00:00:00' - timestamp '2014-01-01 00:00:00'), 
-		d.donor_email, m.merchant_email, ROUND((RANDOM()*10)::NUMERIC,2)
+		d.email, m.email, ROUND((RANDOM()*10)::NUMERIC,2)
 FROM donor d, merchant m
 ORDER BY RANDOM() LIMIT 50;
 

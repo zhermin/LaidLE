@@ -6,23 +6,25 @@ def index_view(request):
 
     with connection.cursor() as cursor:
         cursor.execute("""
-            SELECT donor.donor_pic, donor.donor_name, SUM(donation.donation_amt)
-            FROM donation, donor
-            WHERE donation.donor_email = donor.donor_email
-            AND donation.donor_email <> 'anonymous'
-            AND donation.donation_date >= NOW() - INTERVAL '1 MONTH'
-            GROUP BY donor_pic, donor_name
-            ORDER BY SUM(donation.donation_amt) DESC LIMIT 3;
+            SELECT p.pic, p.name, SUM(dd.donation_amt)
+            FROM person p, donor d, donation dd
+            WHERE p.email = d.email
+            AND dd.donor_email = d.email
+            AND p.email <> 'anonymous'
+            AND dd.donation_date >= NOW() - INTERVAL '1 MONTH'
+            GROUP BY p.pic, p.name
+            ORDER BY SUM(dd.donation_amt) DESC LIMIT 3;
         """)
         top_donors_thismth = cursor.fetchall()
 
         cursor.execute("""
-            SELECT donor.donor_pic, donor.donor_name, SUM(donation.donation_amt)
-            FROM donation, donor
-            WHERE donation.donor_email = donor.donor_email
-            AND donation.donor_email <> 'anonymous'
-            GROUP BY donor_pic, donor_name
-            ORDER BY SUM(donation.donation_amt) DESC LIMIT 5;
+            SELECT p.pic, p.name, SUM(dd.donation_amt)
+            FROM person p, donor d, donation dd
+            WHERE p.email = d.email
+            AND dd.donor_email = d.email
+            AND p.email <> 'anonymous'
+            GROUP BY p.pic, p.name
+            ORDER BY SUM(dd.donation_amt) DESC LIMIT 5;
         """)
         top_donors_alltime = cursor.fetchall()
 

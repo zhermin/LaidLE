@@ -1,0 +1,12 @@
+{% for food_item in food_items %}
+<div class="card mb-5 mt-3 mx-2 pb-3 bg-body rounded me-5" style="min-width: 300px; max-width: 300px;">
+    <img src="https://www.themealdb.com//images//media//meals//ustsqw1468250014.jpg" alt="{{ food_item.2 }}"
+        class="card-img-top">
+    <div class="card-body text-center">
+        <h3 class="card-title mb-3">{{ food_item.2 }}</h3>
+        <h6 class="card-subtitle">{{ food_item.3 }} Stall @ {{ food_item.0 }}</h6>
+        <p class="card-text mt-4 px-1">{{ food_item.4 }}</p>
+        <a href="food/{{ food_item.1 }}" class="stretched-link"></a>
+    </div>
+</div>
+{% endfor %}

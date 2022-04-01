@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from django.db import IntegrityError, connection
+from django.contrib import messages
 
 # Create your views here.
 def login_view(request):
@@ -8,26 +9,24 @@ def login_view(request):
     if request.POST:
         with connection.cursor() as cursor:
             cursor.execute("""
-                SELECT donor_name, donor_email
-                FROM donor
-                WHERE donor_email <> 'anonymous'
-                AND donor_email = %(email)s
-                AND donor_pw = crypt(%(password)s, donor_pw);
+                SELECT name, email, role
+                FROM person
+                WHERE email <> 'anonymous'
+                AND email = %(email)s
+                AND password = crypt(%(password)s, password);
             """, {
                 'email': request.POST['email'],
                 'password': request.POST['password'],
             })
-            donor = cursor.fetchone()
+            person = cursor.fetchone()
 
-        if donor:
-            request.session['role'] = 'donor' # TODO: member/role table
-            request.session['name'] = donor[0]
-            request.session['email'] = donor[1]
-            return redirect('donor:donor')
+        if person:
+            request.session['name'] = person[0]
+            request.session['email'] = person[1]
+            request.session['role'] = person[2]
+            return redirect(f'/{person[2]}')
         else:
-            return render(request, 'account/login.html', {
-                'status': 'Incorrect email or password.',
-            })
+            messages.add_message(request, messages.ERROR, 'Invalid email or password.')
 
     return render(request, 'account/login.html')
 
@@ -36,26 +35,37 @@ def logout_view(request):
     if 'role' in request.session:
         request.session.flush()
     return redirect('/')
-    # return render(request, 'account/logout.html')
 
 def signup_view(request):
 
+    # TODO: if already in person table, error = email already registered, use a different email
     if request.POST:
         try:
             with connection.cursor() as cursor:
                 cursor.execute("""
-                    INSERT INTO donor (donor_name, donor_email, donor_pw)
-                    VALUES (%(donor_name)s, %(donor_email)s, crypt(%(donor_pw)s, gen_salt('bf')));
+                    WITH data AS (
+                        INSERT INTO person (name, email, password, role)
+                        VALUES (
+                            %(name)s,
+                            %(email)s,
+                            crypt(%(password)s, gen_salt('bf')),
+                            'donor'
+                        ) RETURNING email
+                    )
+                    INSERT INTO donor (email)
+                    VALUES (
+                        (SELECT email FROM data)
+                    );
                 """, {
-                    'donor_name': request.POST['donor_name'],
-                    'donor_email': request.POST['donor_email'],
-                    'donor_pw': request.POST['donor_pw'],
+                    'name': request.POST['name'],
+                    'email': request.POST['email'],
+                    'password': request.POST['password'],
                 })
+
+                messages.add_message(request, messages.SUCCESS, 'Registration successful!')
                 return redirect('login')
+
         except IntegrityError as e:
-            print(dir(e))
-            return render(request, 'account/signup.html', {
-                'status': e.__cause__,
-            })
+            messages.add_message(request, messages.ERROR, 'One or more fields are invalid.')
 
     return render(request, 'account/signup.html')

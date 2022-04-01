@@ -1,0 +1,81 @@
+{% extends 'manager/manager_base.html' %}
+
+{% block manager_content %}
+<nav>
+    <ul class="nav nav-tabs">
+        <li class="nav-item">
+            <a class="nav-link" href="/manager">Donations</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="beneficiary">Beneficiaries</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="merchant">Merchants</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link active" href="food">Food</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="donor">Donors</a>
+        </li>
+    </ul>
+</nav>
+
+<div class="p-3 bg-white border border-top-0">
+    <table class="table table-sm table-striped table-hover border align-middle">
+        <thead>
+            <th>#</th>
+            <th>Email</th>
+            <th>Food Name</th>
+            <th style="width: 50%">Description</th>
+            <th style="width: 15%">Actions</th>
+        </thead>
+        {% for food_item in food_items %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ food_item.1 }}</td>
+                <td>{{ food_item.2 }}</td>
+                <td>{{ food_item.3 }}</td>
+                <td>
+                    <div class="d-flex">
+                        <a href="food/edit/{{ food_item.0 }}" class="btn btn-primary btn-sm w-50 mx-1">Edit</a>
+                        <form method="POST" style="display: inline" class="w-50 mx-1">
+                            {% csrf_token %}
+                            <input type="hidden" name="food_sn" value="{{ food_item.0 }}" />
+                            <button
+                                onclick="return confirm('Are you sure you want to delete food {{ food_item.2 }}?');"
+                                class="btn btn-danger btn-sm w-100"
+                                type="submit"
+                                name="action"
+                                value="delete"
+                            >
+                                Delete
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+    <nav>
+        <ul class="pagination justify-content-center mt-4">
+            <li class="page-item {% if not food_items.has_previous %} disabled {% endif %}">
+                <a href="?page=1" class="page-link">&laquo First</a>
+            </li>
+            <li class="page-item {% if not food_items.has_previous %} disabled {% endif %}">
+                <a href="?page={% if food_items.has_previous %}{{ food_items.previous_page_number }}{% endif %}"
+                    class="page-link">Previous</a>
+            </li>
+            <li class="page-item disabled"><a class="page-link text-primary">
+                Page {{ food_items.number }} of {{ food_items.paginator.num_pages }}
+            </a></li>
+            <li class="page-item {% if not food_items.has_next %} disabled {% endif %}">
+                <a href="?page={% if food_items.has_next %}{{ food_items.next_page_number }}{% endif %}"
+                    class="page-link">Next</a></li>
+            <li class="page-item {% if not food_items.has_next %} disabled {% endif %}">
+                <a href="?page={{ food_items.paginator.num_pages }}" class="page-link">Last &raquo</a>
+            </li>
+        </ul>
+    </nav>
+</div>
+{% endblock %}

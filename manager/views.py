@@ -1,110 +1,445 @@
 from django.shortcuts import render, redirect
-from django.db import connection
+from django.db import IntegrityError, DataError, connection
+from django.contrib import messages
+from django.core.paginator import Paginator
 
-# Create your views here.
+# Main View, Shows Donations
 def manager_view(request):
+
+    with connection.cursor() as cursor:
+        # get all donations
+        cursor.execute("""
+            SELECT * FROM donation
+            ORDER BY donation_date DESC;
+        """)
+        donations_paginator = Paginator(cursor.fetchall(), 10)
+        donations_page = request.GET.get('page')
+        donations = donations_paginator.get_page(donations_page)
+
+    context = {
+        "donations": donations,
+    }
+
+    return render(request, "manager/manager_base.html", context)
+
+# Beneficiary Views
+def benef_view(request):
+
+    if request.POST:
+        if request.POST['action'] == 'delete':
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    DELETE FROM person
+                    WHERE email = %(email)s;
+                """, {
+                    'email': request.POST['email']
+                })
+
+            messages.add_message(request, messages.SUCCESS, 'Beneficiary deleted successfully!')
 
     with connection.cursor() as cursor:
         # get all beneficiaries
         cursor.execute("""
-            SELECT * FROM beneficiary
-            ORDER BY benef_name;
+            SELECT p.name, p.email, b.household_income, b.location
+            FROM person p, beneficiary b
+            WHERE p.email = b.email
+            ORDER BY p.name;
         """)
-        beneficiaries = cursor.fetchall()
-
-        # get all merchants
-        cursor.execute("""
-            SELECT * FROM merchant
-            ORDER BY merchant_email;
-        """)
-        merchants = cursor.fetchall()
-
-        # get all merchants' food items
-        cursor.execute("""
-            SELECT f.food_sn, m.merchant_email, f.food_name, f.food_desc
-            FROM produced_by p, food f, merchant m
-            WHERE p.merchant_email = m.merchant_email
-            AND p.food_sn = f.food_sn
-            ORDER BY m.merchant_email;
-        """)
-        food_items = cursor.fetchall()
-
-        # get all donors except anonymous
-        cursor.execute("""
-            SELECT * FROM donor
-            WHERE donor_name <> 'anonymous'
-            ORDER BY donor_name;
-        """)
-        donors = cursor.fetchall()
+        beneficiaries_paginator = Paginator(cursor.fetchall(), 5)
+        beneficiaries_page = request.GET.get('page')
+        beneficiaries = beneficiaries_paginator.get_page(beneficiaries_page)
 
     context = {
-        "beneficiaries": beneficiaries,
-        "merchants": merchants,
-        "food_items": food_items,
-        "donors": donors
+        "beneficiaries": beneficiaries
     }
 
-    return render(request, "manager/index.html", context)
+    return render(request, "manager/beneficiary/index.html", context)
 
 def add_benef_view(request):
 
     if request.POST:
-        with connection.cursor() as cursor:
-            cursor.execute("""
-                INSERT INTO beneficiary (benef_name, benef_email, benef_pw, household_income, benef_location)
-                VALUES (
-                    %(benef_name)s, 
-                    %(benef_email)s, 
-                    crypt(%(benef_pw)s, gen_salt('bf'))
-                    %(household_income)s,
-                    %(benef_location)s
-                );
-            """, {
-                'benef_name': request.POST['name'],
-                'benef_email': request.POST['email'],
-                'benef_pw': request.POST['password'],
-            })
+        try:
+            with connection.cursor() as cursor:
+                # add new entry to both generalized and specialized tables using data modifying CTE
+                cursor.execute("""
+                    WITH data AS (
+                        INSERT INTO person (name, email, password, role)
+                        VALUES (
+                            %(name)s,
+                            %(email)s,
+                            crypt(%(password)s, gen_salt('bf')),
+                            'beneficiary'
+                        ) RETURNING email
+                    )
+                    INSERT INTO beneficiary (email, household_income, location)
+                    VALUES (
+                        (SELECT email FROM data),
+                        %(household_income)s,
+                        %(location)s
+                    );
+                """, {
+                    'name': request.POST['name'],
+                    'email': request.POST['email'],
+                    'password': request.POST['password'],
+                    'household_income': request.POST['household_income'],
+                    'location': request.POST['location'],
+                })
 
-        return redirect('manager:manager')
+                messages.add_message(request, messages.SUCCESS, 'Beneficiary added successfully!')
+                return redirect('/manager/beneficiary')
 
-    return render(request, "manager/beneficiary/add_beneficiary.html")
+        except (IntegrityError, DataError) as e:
+            messages.add_message(request, messages.ERROR, "One or more fields are invalid.")
+
+    return render(request, "manager/beneficiary/add.html")
+
+def edit_benef_view(request, email):
+
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT p.name, p.email, b.household_income, b.location
+            FROM person p, beneficiary b
+            WHERE p.email = b.email
+            AND p.email = %(email)s;
+        """, {
+            'email': email
+        })
+        beneficiary = cursor.fetchone()
+
+    if request.POST:
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    WITH data AS (
+                        UPDATE person
+                        SET name = %(name)s,
+                            email = %(email)s,
+                            password = crypt(%(password)s, gen_salt('bf'))
+                        WHERE email = %(old_email)s
+                        RETURNING email
+                    )
+                    UPDATE beneficiary
+                    SET email = (SELECT email FROM data),
+                        household_income = %(household_income)s,
+                        location = %(location)s
+                    WHERE email = (SELECT email FROM data);
+                """, {
+                    'old_email': request.POST['old_email'],
+                    'name': request.POST['name'],
+                    'email': request.POST['email'],
+                    'password': request.POST['password'],
+                    'household_income': request.POST['household_income'],
+                    'location': request.POST['location'],
+                })
+
+                messages.add_message(request, messages.SUCCESS, 'Beneficiary updated successfully!')
+                return redirect('/manager/beneficiary')
+
+        except (IntegrityError, DataError) as e:
+            messages.add_message(request, messages.ERROR, "One or more fields are invalid.")
+
+    context = {
+        "beneficiary": beneficiary
+    }
+
+    return render(request, "manager/beneficiary/edit.html", context)
+
+# Merchant Views
+def merchant_view(request):
+
+    if request.POST:
+        if request.POST['action'] == 'delete':
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    DELETE FROM person
+                    WHERE email = %(email)s;
+                """, {
+                    'email': request.POST['email']
+                })
+
+            messages.add_message(request, messages.SUCCESS, 'Merchant deleted successfully!')
+
+    with connection.cursor() as cursor:
+        # get all merchants
+        cursor.execute("""
+            SELECT p.name, p.email, m.location
+            FROM person p, merchant m
+            WHERE p.email = m.email
+            ORDER BY p.name;
+        """)
+        merchants_paginator = Paginator(cursor.fetchall(), 5)
+        merchants_page = request.GET.get('page')
+        merchants = merchants_paginator.get_page(merchants_page)
+
+    context = {
+        "merchants": merchants
+    }
+
+    return render(request, "manager/merchant/index.html", context)
 
 def add_merchant_view(request):
 
     if request.POST:
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    WITH data AS (
+                        INSERT INTO person (name, email, password, role)
+                        VALUES (
+                            %(name)s,
+                            %(email)s,
+                            crypt(%(password)s, gen_salt('bf')),
+                            'merchant'
+                        ) RETURNING email
+                    )
+                    INSERT INTO merchant (email, location)
+                    VALUES (
+                        (SELECT email FROM data),
+                        %(location)s
+                    );
+                """, {
+                    'name': request.POST['name'],
+                    'email': request.POST['email'],
+                    'password': request.POST['password'],
+                    'location': request.POST['location'],
+                })
+
+                messages.add_message(request, messages.SUCCESS, 'Merchant added successfully!')
+                return redirect('/manager/merchant')
+
+        except (IntegrityError, DataError) as e:
+            messages.add_message(request, messages.ERROR, "One or more fields are invalid.")
+
+    return render(request, "manager/merchant/add.html")
+
+def edit_merchant_view(request, email):
+
         with connection.cursor() as cursor:
             cursor.execute("""
-                INSERT INTO merchant (merchant_name, merchant_email, merchant_pw, merchant_location)
-                VALUES (
-                    %(merchant_name)s, 
-                    %(merchant_email)s, 
-                    crypt(%(merchant_pw)s, gen_salt('bf')), 
-                    %(merchant_location)s
-                );
+                SELECT p.name, p.email, m.location
+                FROM person p, merchant m
+                WHERE p.email = m.email
+                AND p.email = %(email)s;
             """, {
-                'merchant_name': request.POST['name'],
-                'merchant_email': request.POST['email'],
-                'merchant_pw': request.POST['password'],
-                'merchant_location': request.POST['location'],
+                'email': email
             })
+            merchant = cursor.fetchone()
 
-        return redirect('manager:manager')
+        if request.POST:
+            try:
+                with connection.cursor() as cursor:
+                    cursor.execute("""
+                        WITH data AS (
+                            UPDATE person
+                            SET name = %(name)s,
+                                email = %(email)s,
+                                password = crypt(%(password)s, gen_salt('bf'))
+                            WHERE email = %(old_email)s
+                            RETURNING email
+                        )
+                        UPDATE merchant
+                        SET email = (SELECT email FROM data),
+                            location = %(location)s
+                        WHERE email = (SELECT email FROM data);
+                    """, {
+                        'old_email': request.POST['old_email'],
+                        'name': request.POST['name'],
+                        'email': request.POST['email'],
+                        'password': request.POST['password'],
+                        'location': request.POST['location'],
+                    })
 
-    return render(request, "manager/merchant/add_merchant.html")
+                    messages.add_message(request, messages.SUCCESS, 'Merchant updated successfully!')
+                    return redirect('/manager/merchant')
+
+            except (IntegrityError, DataError) as e:
+                messages.add_message(request, messages.ERROR, "One or more fields are invalid.")
+
+        context = {
+            "merchant": merchant
+        }
+
+        return render(request, "manager/merchant/edit.html", context)
+
+# Merchant's Food Views
+def food_view(request):
+
+    if request.POST:
+        if request.POST['action'] == 'delete':
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    DELETE FROM food
+                    WHERE food_sn = %(food_sn)s;
+                """, {
+                    'food_sn': request.POST['food_sn']
+                })
+
+            messages.add_message(request, messages.SUCCESS, 'Food item deleted successfully!')
+
+    with connection.cursor() as cursor:
+        # get all food items
+        cursor.execute("""
+            SELECT food_sn, merchant_email, food_name, food_desc
+            FROM food f
+            ORDER BY merchant_email;
+        """)
+        food_items_paginator = Paginator(cursor.fetchall(), 5)
+        food_items_page = request.GET.get('page')
+        food_items = food_items_paginator.get_page(food_items_page)
+
+    context = {
+        "food_items": food_items
+    }
+
+    return render(request, "manager/food/index.html", context)
+
+def edit_food_view(request, food_sn):
+
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT food_sn, merchant_email, food_name, food_desc
+            FROM food
+            WHERE food_sn = %(food_sn)s;
+        """, {
+            'food_sn': food_sn
+        })
+        food_item = cursor.fetchone()
+
+    if request.POST:
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    UPDATE food
+                    SET food_name = %(food_name)s,
+                        food_desc = %(food_desc)s
+                    WHERE food_sn = %(food_sn)s;
+                """, {
+                    'food_name': request.POST['food_name'],
+                    'food_desc': request.POST['food_desc'],
+                    'food_sn': food_sn
+                })
+
+                messages.add_message(request, messages.SUCCESS, 'Food item updated successfully!')
+                return redirect('/manager/food')
+
+        except (IntegrityError, DataError) as e:
+            messages.add_message(request, messages.ERROR, "One or more fields are invalid.")
+
+    context = {
+        "food_item": food_item
+    }
+
+    return render(request, "manager/food/edit.html", context)
+
+# Donor Views
+def donor_view(request):
+
+    if request.POST:
+        if request.POST['action'] == 'delete':
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    DELETE FROM person
+                    WHERE email = %(email)s;
+                """, {
+                    'email': request.POST['email']
+                })
+
+            messages.add_message(request, messages.SUCCESS, 'Donor deleted successfully!')
+
+    with connection.cursor() as cursor:
+        # get all donors
+        cursor.execute("""
+            SELECT p.name, p.email, d.coin
+            FROM person p, donor d
+            WHERE p.email = d.email
+            AND p.email <> 'anonymous'
+            ORDER BY p.name;
+        """)
+        donors_paginator = Paginator(cursor.fetchall(), 5)
+        donors_page = request.GET.get('page')
+        donors = donors_paginator.get_page(donors_page)
+
+    context = {
+        "donors": donors
+    }
+
+    return render(request, "manager/donor/index.html", context)
 
 def add_donor_view(request):
 
     if request.POST:
-        with connection.cursor() as cursor:
-            cursor.execute("""
-                INSERT INTO donor (donor_name, donor_email, donor_pw)
-                VALUES (%(donor_name)s, %(donor_email)s, crypt(%(donor_pw)s, gen_salt('bf')));
-            """, {
-                'donor_name': request.POST['name'],
-                'donor_email': request.POST['email'],
-                'donor_pw': request.POST['password'],
-            })
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    WITH data AS (
+                        INSERT INTO person (name, email, password, role)
+                        VALUES (
+                            %(name)s,
+                            %(email)s,
+                            crypt(%(password)s, gen_salt('bf')),
+                            'donor'
+                        ) RETURNING email
+                    )
+                    INSERT INTO donor (email)
+                    VALUES (
+                        (SELECT email FROM data)
+                    );
+                """, {
+                    'name': request.POST['name'],
+                    'email': request.POST['email'],
+                    'password': request.POST['password'],
+                })
 
-        return redirect('manager:manager')
+                messages.add_message(request, messages.SUCCESS, 'Donor added successfully!')
+                return redirect('/manager/donor')
 
-    return render(request, "manager/donor/add_donor.html")
+        except (IntegrityError, DataError) as e:
+            messages.add_message(request, messages.ERROR, "One or more fields are invalid.")
+
+    return render(request, "manager/donor/add.html")
+
+def edit_donor_view(request, email):
+
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT p.name, p.email
+            FROM person p
+            WHERE p.email = %(email)s;
+        """, {
+            'email': email
+        })
+        donor = cursor.fetchone()
+
+    if request.POST:
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    WITH data AS (
+                        UPDATE person
+                        SET name = %(name)s,
+                            email = %(email)s,
+                            password = crypt(%(password)s, gen_salt('bf'))
+                        WHERE email = %(old_email)s
+                        RETURNING email
+                    )
+                    UPDATE donor
+                    SET email = (SELECT email FROM data)
+                    WHERE email = (SELECT email FROM data);
+                """, {
+                    'old_email': request.POST['old_email'],
+                    'name': request.POST['name'],
+                    'email': request.POST['email'],
+                    'password': request.POST['password'],
+                })
+
+                messages.add_message(request, messages.SUCCESS, 'Donor updated successfully!')
+                return redirect('/manager/donor')
+
+        except (IntegrityError, DataError) as e:
+            messages.add_message(request, messages.ERROR, "One or more fields are invalid.")
+
+    context = {
+        "donor": donor
+    }
+
+    return render(request, "manager/donor/edit.html", context)

@@ -3,17 +3,21 @@
 {% block content %}
 <section class="p-5 w-50 mx-auto">
     {% if request.session.role == 'donor' %}
-        <h1>Donating As: {{ request.session.name }}</h1>
+        <h1 class="mb-4">Donating As: {{ request.session.name }}</h1>
     {% else %}
         <h1>Anonymous Donation</h2>
+        <p class="fs-5 mb-4">Sign up as a donor <a href="">here</a> to earn Coins and redeem rewards!</p>
     {% endif %}
-    <p style="color: red">{{ status|safe }}</p>
+    {% include 'message_box.html' with variable=messages %}
 
     <form method="POST" class="row g-3">
         {% csrf_token %}
         <div class="col-12">
             <label for="donation_amt" class="form-label">Your Donation</label>
-            <input type="text" class="form-control" name="donation_amt" id="donation_amt" placeholder="$">
+            <div class="input-group">
+                <span class="input-group-text" id="donation_amt_dollar">S$</span>
+                <input type="text" class="form-control" name="donation_amt" id="donation_amt">
+            </div>
         </div>
         <div class="col-12">
             <label for="cc_type" class="col-form-label">Card Type</label>

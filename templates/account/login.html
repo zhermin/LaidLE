@@ -2,8 +2,8 @@
 
 {% block content %}
 <section class="p-5 w-50 mx-auto">
-    <h1>Log In</h1>
-    <p style="color: red">{{ status|safe }}</p>
+    <h1 class="mb-4">Log In</h1>
+    {% include 'message_box.html' with variable=messages %}
 
     <form method="POST">
         {% csrf_token %}
