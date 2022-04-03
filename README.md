@@ -60,7 +60,7 @@ You can also donate through our partnered merchants by scanning their QR Codes (
   * `malaysian@google.com.au`
   * `8K0CN0I`
 * Manager (Please don't delete everything!)
-  * `manager@manager`
+  * `manager@manager.com`
   * `manager`
 
 ## Team Members

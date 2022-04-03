@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from django.db import connection
+from django.contrib import messages
 
 # Create your views here.
 def index_view(request):
@@ -56,6 +57,10 @@ def donation_view(request):
                 'merchant_email': request.GET.get('merchant'), # able to donate from a store using URL from QR code
                 'donation_amt': request.POST['donation_amt'],
             })
-            return redirect('/')
+            messages.add_message(request, messages.SUCCESS, 'Thank you for your donation! We appreciate your support!')
+            if 'role' in request.session:
+                return redirect(f"/{request.session['role']}")
+            else:
+                return redirect('/')
 
     return render(request, 'core/donation.html')
