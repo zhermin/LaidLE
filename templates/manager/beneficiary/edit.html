@@ -1,48 +1,50 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<section class="p-5 w-50 mx-auto">
-    <div class="d-flex">
-        <a href="/{{ request.session.role }}/beneficiary" class="text-dark"><i class="bi bi-arrow-return-left h2 me-4"></i></a>
-        <h2 class="mb-4">Edit Beneficiary</h2>
-    </div>
-    {% include 'message_box.html' with variable=messages %}
-    <form method="POST" class="row g-3">
-        {% csrf_token %}
-        <input type="hidden" name="old_email" value="{{ beneficiary.1 }}">
-        <div class="col-12">
-            <label for="name" class="form-label">Full Name</label>
-            <input type="text" class="form-control" name="name" id="name" value="{{ beneficiary.0 }}">
+<section class="p-5">
+    <div class="container">
+        <div class="d-flex">
+            <a href="/{{ request.session.role }}/beneficiary" class="text-dark"><i class="bi bi-arrow-return-left h2 me-4"></i></a>
+            <h2 class="mb-4">Edit Beneficiary</h2>
         </div>
-        <div class="col-12">
-            <label for="email" class="form-label">Email</label>
-            <input type="email" class="form-control" name="email" id="email" value="{{ beneficiary.1 }}">
-        </div>
-        <div class="col-12">
-            <label for="password" class="form-label">Password</label>
-            <input type="password" class="form-control" name="password" id="password" minlength="6" required>
-        </div>
-        <div class="col-md-6">
-            <label for="household_income" class="form-label">Household Income</label>
-            <div class="input-group">
-                <span class="input-group-text" id="donation_amt_dollar">S$</span>
-                <input type="text" class="form-control" name="household_income" id="household_income" value="{{ beneficiary.2 }}">
+        {% include 'message_box.html' with variable=messages %}
+        <form method="POST" class="row g-3">
+            {% csrf_token %}
+            <input type="hidden" name="old_email" value="{{ beneficiary.1 }}">
+            <div class="col-12">
+                <label for="name" class="form-label">Full Name</label>
+                <input type="text" class="form-control" name="name" id="name" value="{{ beneficiary.0 }}">
             </div>
-        </div>
-        <div class="col-md-6">
-            <label for="location" class="form-label">Location (Current: {{ beneficiary.3 }})</label>
-            <select name="location" id="location" class="form-select">
-                <option value="Central">Central</option>
-                <option value="North">North</option>
-                <option value="South">South</option>
-                <option value="East">East</option>
-                <option value="West">West</option>
-            </select>
-        </div>
-        <div class="col-12"></div>
-        <div class="col-12">
-            <button type="submit" class="btn btn-primary">Confirm Edit</button>
-        </div>
-    </form>
+            <div class="col-12">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" name="email" id="email" value="{{ beneficiary.1 }}">
+            </div>
+            <div class="col-12">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" class="form-control" name="password" id="password" minlength="6" required>
+            </div>
+            <div class="col-md-6">
+                <label for="household_income" class="form-label">Household Income</label>
+                <div class="input-group">
+                    <span class="input-group-text" id="donation_amt_dollar">S$</span>
+                    <input type="text" class="form-control" name="household_income" id="household_income" value="{{ beneficiary.2 }}">
+                </div>
+            </div>
+            <div class="col-md-6">
+                <label for="location" class="form-label">Location (Current: {{ beneficiary.3 }})</label>
+                <select name="location" id="location" class="form-select">
+                    <option value="Central">Central</option>
+                    <option value="North">North</option>
+                    <option value="South">South</option>
+                    <option value="East">East</option>
+                    <option value="West">West</option>
+                </select>
+            </div>
+            <div class="col-12"></div>
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary">Confirm Edit</button>
+            </div>
+        </form>
+    </div>
 </section>
 {% endblock %}

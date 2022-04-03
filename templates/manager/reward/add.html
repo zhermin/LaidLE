@@ -1,34 +1,36 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<section class="p-5 w-50 mx-auto">
-    <div class="d-flex">
-        <a href="/{{ request.session.role }}/reward" class="text-dark"><i class="bi bi-arrow-return-left h2 me-4"></i></a>
-        <h2 class="mb-4">Add New Reward</h2>
+<section class="p-5">
+    <div class="container">
+        <div class="d-flex">
+            <a href="/{{ request.session.role }}/reward" class="text-dark"><i class="bi bi-arrow-return-left h2 me-4"></i></a>
+            <h2 class="mb-4">Add New Reward</h2>
+        </div>
+        {% include 'message_box.html' with variable=messages %}
+        <form method="POST" class="row g-3">
+            {% csrf_token %}
+            <div class="col-12">
+                <label for="reward_name" class="form-label">Reward Name</label>
+                <input type="text" class="form-control" name="reward_name" id="reward_name">
+            </div>
+            <div class="col-12">
+                <label for="reward_price" class="form-label">Coin Price</label>
+                <input type="text" class="form-control" name="reward_price" id="reward_price">
+            </div>
+            <div class="col-12">
+                <label for="reward_qty" class="form-label">Quantity</label>
+                <input type="text" class="form-control" name="reward_qty" id="reward_qty">
+            </div>
+            <div class="col-12">
+                <label for="reward_desc" class="form-label">Reward Description</label>
+                <textarea class="form-control" name="reward_desc" id="reward_desc" rows="5"></textarea>
+            </div>
+            <div class="col-12"></div>
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary">Confirm Add</button>
+            </div>
+        </form>
     </div>
-    {% include 'message_box.html' with variable=messages %}
-    <form method="POST" class="row g-3">
-        {% csrf_token %}
-        <div class="col-12">
-            <label for="reward_name" class="form-label">Reward Name</label>
-            <input type="text" class="form-control" name="reward_name" id="reward_name">
-        </div>
-        <div class="col-12">
-            <label for="reward_price" class="form-label">Coin Price</label>
-            <input type="text" class="form-control" name="reward_price" id="reward_price">
-        </div>
-        <div class="col-12">
-            <label for="reward_qty" class="form-label">Quantity</label>
-            <input type="text" class="form-control" name="reward_qty" id="reward_qty">
-        </div>
-        <div class="col-12">
-            <label for="reward_desc" class="form-label">Reward Description</label>
-            <textarea class="form-control" name="reward_desc" id="reward_desc" rows="5"></textarea>
-        </div>
-        <div class="col-12"></div>
-        <div class="col-12">
-            <button type="submit" class="btn btn-primary">Confirm Add</button>
-        </div>
-    </form>
 </section>
 {% endblock %}

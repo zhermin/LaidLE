@@ -1,67 +1,69 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<section class="p-5 w-50 mx-auto">
-    {% if request.session.role == 'donor' %}
-        <h1 class="mb-4">Donating As: {{ request.session.name }}</h1>
-    {% else %}
-        <h1>Anonymous Donation</h2>
-        <p class="fs-5 mb-4">Sign up as a donor <a href="">here</a> to earn Coins and redeem rewards!</p>
-    {% endif %}
-    {% include 'message_box.html' with variable=messages %}
-
-    <form method="POST" class="row g-3">
-        {% csrf_token %}
-        <div class="col-12">
-            <label for="donation_amt" class="form-label">Your Donation</label>
-            <div class="input-group">
-                <span class="input-group-text" id="donation_amt_dollar">S$</span>
-                <input type="text" class="form-control" name="donation_amt" id="donation_amt">
-            </div>
-        </div>
-        {% if request.GET.merchant %}
-        <div class="col-12">
-            <label for="donation_amt" class="form-label">Donating From</label>
-            <div class="input-group">
-                <input
-                    type="text"
-                    class="form-control"
-                    name="merchant_email"
-                    id="merchant_email"
-                    value="{{ request.GET.merchant }}"
-                    disabled
-                >
-            </div>
-        </div>
+<section class="p-5">
+    <div class="container">
+        {% if request.session.role == 'donor' %}
+            <h1 class="mb-4">Donating As: {{ request.session.name }}</h1>
+        {% else %}
+            <h1>Anonymous Donation</h2>
+            <p class="fs-5 mb-4">Sign up as a donor <a href="">here</a> to earn Coins and redeem rewards!</p>
         {% endif %}
-        <div class="col-12">
-            <label for="cc_type" class="col-form-label">Card Type</label>
-            <select name="cc_type" id="cc_type" class="form-select">
-                <option value="amex">American Express</option>
-                <option value="mastercard">Mastercard</option>
-                <option value="visa">Visa</option>
-            </select>
-        </div>
-        <div class="col-12">
-            <label for="cc_number" class="form-label">Card Number</label>
-            <input type="text" class="form-control" name="cc_number" id="cc_number">
-        </div>
-        <div class="col-12">
-            <label for="cc_name" class="form-label">Card Owner</label>
-            <input type="text" class="form-control" name="cc_name" id="cc_name">
-        </div>
-        <div class="col-md-6">
-            <label for="cc_expiry" class="form-label">Expiry</label>
-            <input type="text" class="form-control" name="cc_expiry" id="cc_expiry" placeholder="MM/YY">
-        </div>
-        <div class="col-md-6">
-            <label for="cc_cvv" class="form-label">CVV</label>
-            <input type="text" class="form-control" name="cc_cvv" id="cc_cvv" placeholder="***">
-        </div>
-        <div class="col-12"></div>
-        <div class="col-12">
-            <button type="submit" class="btn btn-primary">Donate!</button>
-        </div>
-    </form>
+        {% include 'message_box.html' with variable=messages %}
+
+        <form method="POST" class="row g-3">
+            {% csrf_token %}
+            <div class="col-12">
+                <label for="donation_amt" class="form-label">Your Donation</label>
+                <div class="input-group">
+                    <span class="input-group-text" id="donation_amt_dollar">S$</span>
+                    <input type="text" class="form-control" name="donation_amt" id="donation_amt">
+                </div>
+            </div>
+            {% if request.GET.merchant %}
+            <div class="col-12">
+                <label for="donation_amt" class="form-label">Donating From</label>
+                <div class="input-group">
+                    <input
+                        type="text"
+                        class="form-control"
+                        name="merchant_email"
+                        id="merchant_email"
+                        value="{{ request.GET.merchant }}"
+                        disabled
+                    >
+                </div>
+            </div>
+            {% endif %}
+            <div class="col-12">
+                <label for="cc_type" class="col-form-label">Card Type</label>
+                <select name="cc_type" id="cc_type" class="form-select">
+                    <option value="amex">American Express</option>
+                    <option value="mastercard">Mastercard</option>
+                    <option value="visa">Visa</option>
+                </select>
+            </div>
+            <div class="col-12">
+                <label for="cc_number" class="form-label">Card Number</label>
+                <input type="text" class="form-control" name="cc_number" id="cc_number">
+            </div>
+            <div class="col-12">
+                <label for="cc_name" class="form-label">Card Owner</label>
+                <input type="text" class="form-control" name="cc_name" id="cc_name">
+            </div>
+            <div class="col-md-6">
+                <label for="cc_expiry" class="form-label">Expiry</label>
+                <input type="text" class="form-control" name="cc_expiry" id="cc_expiry" placeholder="MM/YY">
+            </div>
+            <div class="col-md-6">
+                <label for="cc_cvv" class="form-label">CVV</label>
+                <input type="text" class="form-control" name="cc_cvv" id="cc_cvv" placeholder="***">
+            </div>
+            <div class="col-12"></div>
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary">Donate!</button>
+            </div>
+        </form>
+    </div>
 </section>
 {% endblock %}

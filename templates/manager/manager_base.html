@@ -8,13 +8,13 @@
             <form method="POST" style="display: inline" class="w-50 mx-1">
                 {% csrf_token %}
                 <button
-                    onclick="return confirm('Are you sure you want allocate coupons to the beneficiaries for the previous month?');"
+                    onclick="return confirm('Are you sure you want allocate coupons to the beneficiaries using the donation pool from the previous month?');"
                     class="btn btn-info mx-3"
                     type="submit"
                     name="action"
                     value="allocate"
                 >
-                    Allocate Coupons for Previous Month
+                    Allocate Coupons
                 </button>
             </form>
         </div>
@@ -94,5 +94,6 @@
             </nav>
         </div>
         {% endblock %}
+    </div>
 </section>
 {% endblock %}

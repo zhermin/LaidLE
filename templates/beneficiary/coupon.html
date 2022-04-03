@@ -1,8 +1,8 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<section class="p-5 w-50 mx-auto">
-    <div class="container py-2 border rounded bg-light d-flex flex-column">
+<section class="p-5">
+    <div class="container p-3 border rounded bg-light d-flex flex-column">
         {% include 'message_box.html' with variable=messages %}
         {% if coupon %}
             <a href="/{{ request.session.role }}" class="text-dark mb-3"><i class="bi bi-arrow-return-left h2"></i></a>
