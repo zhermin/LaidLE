@@ -43,6 +43,26 @@ You can also donate through our partnered merchants by scanning their QR Codes (
 * All database operations performed using raw SQL (project requirements) instead of ORM
 * All integrity constraints, raw SQL schema design and demo population code can be found in the folder `/sql`
 
+### Demo User Login Credentials (Email/Password)
+* Random Donor
+  * `asimonnet3@liveinternet.ru`
+  * `cMTDFyRJ`
+* Rich Donor
+  * `akupker1@state.tx.us`
+  * `M6tOaamSFND8`
+* Beneficiary with 0 Coupons
+  * `kdeetch5@stumbleupon.com`
+  * `fLCbXW2R`
+* Beneficiary with 1 Coupon
+  * `dshelmerdine0@list-manage.com`
+  * `dtxBZCum`
+* Merchant
+  * `malaysian@google.com.au`
+  * `8K0CN0I`
+* Manager (Please don't delete everything!)
+  * `manager@manager`
+  * `manager`
+
 ## Team Members
 1. Tam Zher Min (Full-Stack Django/Bootstrap Website)
 2. Elisha Lee (SQL Code & Schema Design)
