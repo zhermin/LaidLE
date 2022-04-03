@@ -4,7 +4,7 @@
 <section class="p-5 w-50 mx-auto">
     <div class="container">
         <div class="d-flex">
-            <a href="/merchant" class="text-dark"><i class="bi bi-arrow-return-left h2 me-4"></i></a>
+            <a href="/{{ request.session.role }}" class="text-dark"><i class="bi bi-arrow-return-left h2 me-4"></i></a>
             <h2 class="mb-4">Editing Your Food Item</h2>
         </div>
         {% include 'message_box.html' with variable=messages %}
@@ -17,11 +17,11 @@
             <input type="hidden" name="food_sn" value="{{ food_item.1 }}">
             <div class="mb-3">
                 <label for="food_name" class="form-label">Food Name</label>
-                <input type="text" class="form-control" name="food_name" for="food_name" id="food_name" value="{{ food_item.2 }}">
+                <input type="text" class="form-control" name="food_name" for="food_name" value="{{ food_item.2 }}">
             </div>
             <div class="mb-3">
                 <label for="food_desc" class="form-label">Description</label>
-                <textarea class="form-control" name="food_desc" id="food_desc" rows="5">{{ food_item.3 }}</textarea>
+                <textarea class="form-control" name="food_desc" rows="5">{{ food_item.3 }}</textarea>
             </div>
             <button type="submit" class="btn btn-primary">Confirm Edit</button>
         </form>

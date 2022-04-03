@@ -2,12 +2,35 @@ from django.shortcuts import render, redirect
 from django.db import IntegrityError, DataError, connection
 from django.contrib import messages
 from django.core.paginator import Paginator
+from account.decorators import check_permissions
 
 # Main View, Shows Donations
+@check_permissions('manager')
 def manager_view(request):
 
+    if request.POST:
+        if request.POST['action'] == 'allocate':
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    INSERT INTO coupon (issue_date, expiry_date, benef_email)
+                    SELECT	DATE_TRUNC('MONTH', f.year_month + INTERVAL '1 MONTH') AS issue_date,
+                            DATE_TRUNC('MONTH', f.year_month + INTERVAL '2 MONTH') AS expiry_date,
+                            benef_email
+                    FROM fund_view f
+                    CROSS JOIN LATERAL (
+                        SELECT b.email AS benef_email
+                        FROM beneficiary b LEFT JOIN coupon c
+                        ON b.email = c.benef_email
+                        GROUP BY b.email, b.household_income, f.year_month
+                        HAVING f.year_month = DATE_TRUNC('MONTH', NOW() - INTERVAL '1 month')
+                        ORDER BY COUNT(c.benef_email), b.household_income
+                        LIMIT f.quotient
+                    ) AS benef_email;
+                """)
+
+                messages.add_message(request, messages.SUCCESS, 'Coupons allocated to beneficiaries successfully!')
+
     with connection.cursor() as cursor:
-        # get all donations
         cursor.execute("""
             SELECT * FROM donation
             ORDER BY donation_date DESC;
@@ -22,7 +45,12 @@ def manager_view(request):
 
     return render(request, "manager/manager_base.html", context)
 
+@check_permissions('manager')
+def profile_view(request):
+    return render(request, 'account/profile.html')
+
 # Beneficiary Views
+@check_permissions('manager')
 def benef_view(request):
 
     if request.POST:
@@ -38,7 +66,6 @@ def benef_view(request):
             messages.add_message(request, messages.SUCCESS, 'Beneficiary deleted successfully!')
 
     with connection.cursor() as cursor:
-        # get all beneficiaries
         cursor.execute("""
             SELECT p.name, p.email, b.household_income, b.location
             FROM person p, beneficiary b
@@ -55,6 +82,7 @@ def benef_view(request):
 
     return render(request, "manager/beneficiary/index.html", context)
 
+@check_permissions('manager')
 def add_benef_view(request):
 
     if request.POST:
@@ -93,6 +121,7 @@ def add_benef_view(request):
 
     return render(request, "manager/beneficiary/add.html")
 
+@check_permissions('manager')
 def edit_benef_view(request, email):
 
     with connection.cursor() as cursor:
@@ -145,6 +174,7 @@ def edit_benef_view(request, email):
     return render(request, "manager/beneficiary/edit.html", context)
 
 # Merchant Views
+@check_permissions('manager')
 def merchant_view(request):
 
     if request.POST:
@@ -160,11 +190,11 @@ def merchant_view(request):
             messages.add_message(request, messages.SUCCESS, 'Merchant deleted successfully!')
 
     with connection.cursor() as cursor:
-        # get all merchants
         cursor.execute("""
             SELECT p.name, p.email, m.location
             FROM person p, merchant m
             WHERE p.email = m.email
+            AND p.email <> 'anonymous_merchant'
             ORDER BY p.name;
         """)
         merchants_paginator = Paginator(cursor.fetchall(), 5)
@@ -177,6 +207,7 @@ def merchant_view(request):
 
     return render(request, "manager/merchant/index.html", context)
 
+@check_permissions('manager')
 def add_merchant_view(request):
 
     if request.POST:
@@ -212,6 +243,7 @@ def add_merchant_view(request):
 
     return render(request, "manager/merchant/add.html")
 
+@check_permissions('manager')
 def edit_merchant_view(request, email):
 
         with connection.cursor() as cursor:
@@ -262,6 +294,7 @@ def edit_merchant_view(request, email):
         return render(request, "manager/merchant/edit.html", context)
 
 # Merchant's Food Views
+@check_permissions('manager')
 def food_view(request):
 
     if request.POST:
@@ -277,7 +310,6 @@ def food_view(request):
             messages.add_message(request, messages.SUCCESS, 'Food item deleted successfully!')
 
     with connection.cursor() as cursor:
-        # get all food items
         cursor.execute("""
             SELECT food_sn, merchant_email, food_name, food_desc
             FROM food f
@@ -293,6 +325,7 @@ def food_view(request):
 
     return render(request, "manager/food/index.html", context)
 
+@check_permissions('manager')
 def edit_food_view(request, food_sn):
 
     with connection.cursor() as cursor:
@@ -332,6 +365,7 @@ def edit_food_view(request, food_sn):
     return render(request, "manager/food/edit.html", context)
 
 # Donor Views
+@check_permissions('manager')
 def donor_view(request):
 
     if request.POST:
@@ -347,12 +381,11 @@ def donor_view(request):
             messages.add_message(request, messages.SUCCESS, 'Donor deleted successfully!')
 
     with connection.cursor() as cursor:
-        # get all donors
         cursor.execute("""
             SELECT p.name, p.email, d.coin
             FROM person p, donor d
             WHERE p.email = d.email
-            AND p.email <> 'anonymous'
+            AND p.email <> 'anonymous_donor'
             ORDER BY p.name;
         """)
         donors_paginator = Paginator(cursor.fetchall(), 5)
@@ -365,6 +398,7 @@ def donor_view(request):
 
     return render(request, "manager/donor/index.html", context)
 
+@check_permissions('manager')
 def add_donor_view(request):
 
     if request.POST:
@@ -398,6 +432,7 @@ def add_donor_view(request):
 
     return render(request, "manager/donor/add.html")
 
+@check_permissions('manager')
 def edit_donor_view(request, email):
 
     with connection.cursor() as cursor:
@@ -443,3 +478,162 @@ def edit_donor_view(request, email):
     }
 
     return render(request, "manager/donor/edit.html", context)
+
+# Coupon Views
+@check_permissions('manager')
+def coupon_view(request):
+
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT coupon_sn, issue_date, expiry_date, benef_email
+            FROM coupon
+            ORDER BY issue_date DESC, benef_email;
+        """)
+        coupons_paginator = Paginator(cursor.fetchall(), 5)
+        coupons_page = request.GET.get('page')
+        coupons = coupons_paginator.get_page(coupons_page)
+
+    context = {
+        "coupons": coupons
+    }
+
+    return render(request, "manager/coupon/index.html", context)
+
+# Claim Views
+@check_permissions('manager')
+def claim_view(request):
+
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT coupon_sn, food_sn, claim_date, benef_email, merchant_email
+            FROM claim
+            ORDER BY claim_date DESC, benef_email;
+        """)
+        claims_paginator = Paginator(cursor.fetchall(), 5)
+        claims_page = request.GET.get('page')
+        claims = claims_paginator.get_page(claims_page)
+
+    context = {
+        "claims": claims
+    }
+
+    return render(request, "manager/claim/index.html", context)
+
+# Reward Views
+@check_permissions('manager')
+def reward_view(request):
+
+    if request.POST:
+        if request.POST['action'] == 'delete':
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    DELETE FROM reward
+                    WHERE reward_sn = %(reward_sn)s;
+                """, {
+                    'reward_sn': request.POST['reward_sn']
+                })
+
+                messages.add_message(request, messages.SUCCESS, 'Reward deleted successfully!')
+
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT reward_sn, reward_name, reward_desc, reward_price, reward_qty
+            FROM reward
+            ORDER BY reward_name;
+        """)
+        rewards_paginator = Paginator(cursor.fetchall(), 5)
+        rewards_page = request.GET.get('page')
+        rewards = rewards_paginator.get_page(rewards_page)
+
+    context = {
+        "rewards": rewards
+    }
+
+    return render(request, "manager/reward/index.html", context)
+
+@check_permissions('manager')
+def add_reward_view(request):
+
+    if request.POST:
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    INSERT INTO reward (reward_name, reward_desc, reward_price, reward_qty)
+                    VALUES (%(reward_name)s, %(reward_desc)s, %(reward_price)s, %(reward_qty)s)
+                """, {
+                    'reward_name': request.POST['reward_name'],
+                    'reward_desc': request.POST['reward_desc'],
+                    'reward_price': request.POST['reward_price'],
+                    'reward_qty': request.POST['reward_qty'],
+                })
+
+                messages.add_message(request, messages.SUCCESS, 'Reward added successfully!')
+                return redirect('/manager/reward')
+
+        except (IntegrityError, DataError) as e:
+            messages.add_message(request, messages.ERROR, "One or more fields are invalid.")
+
+    return render(request, "manager/reward/add.html")
+
+@check_permissions('manager')
+def edit_reward_view(request, reward_sn):
+
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT reward_sn, reward_name, reward_price, reward_qty, reward_desc
+            FROM reward
+            WHERE reward_sn = %(reward_sn)s;
+        """, {
+            'reward_sn': reward_sn
+        })
+        reward = cursor.fetchone()
+
+    if request.POST:
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    UPDATE reward
+                    SET reward_name = %(reward_name)s,
+                        reward_desc = %(reward_desc)s,
+                        reward_price = %(reward_price)s,
+                        reward_qty = %(reward_qty)s
+                    WHERE reward_sn = %(reward_sn)s;
+                """, {
+                    'reward_sn': request.POST['reward_sn'],
+                    'reward_name': request.POST['reward_name'],
+                    'reward_desc': request.POST['reward_desc'],
+                    'reward_price': request.POST['reward_price'],
+                    'reward_qty': request.POST['reward_qty'],
+                })
+
+                messages.add_message(request, messages.SUCCESS, 'Reward updated successfully!')
+                return redirect('/manager/reward')
+
+        except (IntegrityError, DataError) as e:
+            messages.add_message(request, messages.ERROR, "One or more fields are invalid.")
+
+    context = {
+        "reward": reward
+    }
+
+    return render(request, "manager/reward/edit.html", context)
+
+@check_permissions('manager')
+def redemption_view(request):
+
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT rd.reward_sn, rw.reward_name, rd.redeem_date, rd.donor_email
+            FROM redemption rd, reward rw
+            WHERE rd.reward_sn = rw.reward_sn
+            ORDER BY redeem_date DESC, donor_email;
+        """)
+        redemptions_paginator = Paginator(cursor.fetchall(), 5)
+        redemptions_page = request.GET.get('page')
+        redemptions = redemptions_paginator.get_page(redemptions_page)
+
+    context = {
+        "redemptions": redemptions
+    }
+
+    return render(request, "manager/redemption/index.html", context)

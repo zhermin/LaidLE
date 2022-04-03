@@ -19,6 +19,21 @@
                 <input type="text" class="form-control" name="donation_amt" id="donation_amt">
             </div>
         </div>
+        {% if request.GET.merchant %}
+        <div class="col-12">
+            <label for="donation_amt" class="form-label">Donating From</label>
+            <div class="input-group">
+                <input
+                    type="text"
+                    class="form-control"
+                    name="merchant_email"
+                    id="merchant_email"
+                    value="{{ request.GET.merchant }}"
+                    disabled
+                >
+            </div>
+        </div>
+        {% endif %}
         <div class="col-12">
             <label for="cc_type" class="col-form-label">Card Type</label>
             <select name="cc_type" id="cc_type" class="form-select">

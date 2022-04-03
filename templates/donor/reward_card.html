@@ -1,0 +1,28 @@
+{% for reward in rewards %}
+<div class="card mb-5 mt-3 mx-2 bg-body rounded me-5" style="min-width: 300px; max-width: 300px;">
+    <img src="https://www.themealdb.com//images//media//meals//7mxnzz1593350801.jpg" alt="{{ reward.2 }}"
+        class="card-img-top">
+    <div class="card-body text-center">
+        <h3 class="card-title mb-3">{{ reward.1 }}</h3>
+        <h6 class="card-subtitle mb-2">Qty: {{ reward.4 }}</h6>
+        <h4 class="card-subtitle">{{ reward.3 }} Coins</h4>
+        <p class="card-text mt-4 px-1 pb-3">{{ reward.2 }}</p>
+    </div>
+    <div class="card-footer">
+        <form method="POST" style="display: inline">
+            {% csrf_token %}
+            <input type="hidden" name="reward_sn" value="{{ reward.0 }}" />
+            <button
+                onclick="return confirm('Are you sure you want to redeem a {{ reward.1 }}?');"
+                class="btn btn-warning btn-sm stretched-link w-100"
+                type="submit"
+                name="action"
+                value="redeem"
+                {% if coins < reward.3 or reward.4 < 1 %} disabled {% endif %}
+            >
+                Redeem
+            </button>
+        </form>
+    </div>
+</div>
+{% endfor %}

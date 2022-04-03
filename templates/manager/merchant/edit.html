@@ -3,7 +3,7 @@
 {% block content %}
 <section class="p-5 w-50 mx-auto">
     <div class="d-flex">
-        <a href="/manager/merchant" class="text-dark"><i class="bi bi-arrow-return-left h2 me-4"></i></a>
+        <a href="/{{ request.session.role }}/merchant" class="text-dark"><i class="bi bi-arrow-return-left h2 me-4"></i></a>
         <h2 class="mb-4">Edit Merchant</h2>
     </div>
     {% include 'message_box.html' with variable=messages %}
@@ -23,7 +23,7 @@
             <input type="password" class="form-control" name="password" id="password" minlength="6" required>
         </div>
         <div class="col-md-12">
-            <label for="location" class="form-label">Location (Prev: {{ merchant.2 }})</label>
+            <label for="location" class="form-label">Location (Current: {{ merchant.2 }})</label>
             <select name="location" id="location" class="form-select">
                 <option value="Central">Central</option>
                 <option value="North">North</option>

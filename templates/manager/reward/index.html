@@ -16,7 +16,7 @@
             <a class="nav-link" href="food">Food</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link active" href="donor">Donors</a>
+            <a class="nav-link" href="donor">Donors</a>
         </li>
         <li class="nav-item">
             <a class="nav-link" href="coupon">Coupons</a>
@@ -25,7 +25,7 @@
             <a class="nav-link" href="claim">Claims</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="reward">Rewards</a>
+            <a class="nav-link active" href="reward">Rewards</a>
         </li>
         <li class="nav-item">
             <a class="nav-link" href="redemption">Redemptions</a>
@@ -34,28 +34,30 @@
 </nav>
 
 <div class="p-3 bg-white border border-top-0 table-responsive">
-    <a href="donor/add" class="btn btn-warning mb-3">Register New Donor</a>
+    <a href="reward/add" class="btn btn-warning mb-3">Add New Reward</a>
     <table class="table table-sm table-striped table-hover border align-middle">
         <thead>
             <th>#</th>
-            <th>Full Name</th>
-            <th>Email</th>
-            <th>Coin</th>
+            <th>Reward Name</th>
+            <th>Description</th>
+            <th>Price</th>
+            <th>Quantity</th>
             <th style="width: 15%">Actions</th>
         </thead>
-        {% for donor in donors %}
+        {% for reward in rewards %}
             <tr>
                 <td>{{ forloop.counter }}</td>
-                <td>{{ donor.0 }}</td>
-                <td>{{ donor.1 }}</td>
-                <td>{{ donor.2 }}</td>
+                <td>{{ reward.1 }}</td>
+                <td>{{ reward.2 }}</td>
+                <td>{{ reward.3 }}</td>
+                <td>{{ reward.4 }}</td>
                 <td class="d-flex">
-                    <a href="donor/edit/{{ donor.1 }}" class="btn btn-primary btn-sm w-50 mx-1">Edit</a>
+                    <a href="reward/edit/{{ reward.0 }}" class="btn btn-primary btn-sm w-50 mx-1">Edit</a>
                     <form method="POST" style="display: inline" class="w-50 mx-1">
                         {% csrf_token %}
-                        <input type="hidden" name="email" value="{{ donor.1 }}" />
+                        <input type="hidden" name="reward_sn" value="{{ reward.0 }}" />
                         <button
-                            onclick="return confirm('Are you sure you want to delete user {{ donor.1 }}?');"
+                            onclick="return confirm('Are you sure you want to delete reward {{ reward.1 }}?');"
                             class="btn btn-danger btn-sm w-100"
                             type="submit"
                             name="action"
@@ -70,21 +72,21 @@
     </table>
     <nav>
         <ul class="pagination justify-content-center mt-4">
-            <li class="page-item {% if not donors.has_previous %} disabled {% endif %}">
+            <li class="page-item {% if not rewards.has_previous %} disabled {% endif %}">
                 <a href="?page=1" class="page-link">&laquo First</a>
             </li>
-            <li class="page-item {% if not donors.has_previous %} disabled {% endif %}">
-                <a href="?page={% if donors.has_previous %}{{ donors.previous_page_number }}{% endif %}"
+            <li class="page-item {% if not rewards.has_previous %} disabled {% endif %}">
+                <a href="?page={% if rewards.has_previous %}{{ rewards.previous_page_number }}{% endif %}"
                     class="page-link">Previous</a>
             </li>
             <li class="page-item disabled"><a class="page-link text-primary">
-                Page {{ donors.number }} of {{ donors.paginator.num_pages }}
+                Page {{ rewards.number }} of {{ rewards.paginator.num_pages }}
             </a></li>
-            <li class="page-item {% if not donors.has_next %} disabled {% endif %}">
-                <a href="?page={% if donors.has_next %}{{ donors.next_page_number }}{% endif %}"
+            <li class="page-item {% if not rewards.has_next %} disabled {% endif %}">
+                <a href="?page={% if rewards.has_next %}{{ rewards.next_page_number }}{% endif %}"
                     class="page-link">Next</a></li>
-            <li class="page-item {% if not donors.has_next %} disabled {% endif %}">
-                <a href="?page={{ donors.paginator.num_pages }}" class="page-link">Last &raquo</a>
+            <li class="page-item {% if not rewards.has_next %} disabled {% endif %}">
+                <a href="?page={{ rewards.paginator.num_pages }}" class="page-link">Last &raquo</a>
             </li>
         </ul>
     </nav>

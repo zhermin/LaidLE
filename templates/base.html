@@ -28,16 +28,32 @@
             </button>
 
             <div class="collapse navbar-collapse" id="navmenu">
-                <ul class="navbar-nav ms-auto">
+                <ul class="navbar-nav ms-auto align-items-center">
                     {% if request.session.role %}
-                    {% if request.session.role == 'donor' %}
-                    <li class="nav-item"><a href="/donation" class="btn btn-outline-primary mx-2">DONATE NOW</a></li>
-                    {% endif %}
-                    <li class="nav-item"><a href="/{{ request.session.role }}/account"
-                            class="nav-link">Account</button></a></li>
-                    <li class="nav-item"><a href="/logout" class="nav-link">Log Out</a></li>
+                        {% if request.session.role == 'donor' %}
+                        <li class="nav-item"><a href="/donation" class="btn btn-outline-primary me-4 d-none d-lg-block">DONATE NOW</a></li>
+                        <li class="nav-item"><a href="/donation" class="nav-link d-lg-none">DONATE NOW</a></li>
+                        {% endif %}
+                    <!-- Individual links appear only on small screens -->
+                    <li class="nav-item d-lg-none"><a href="/{{ request.session.role }}" class="nav-link">Dashboard</a></li>
+                    <li class="nav-item d-lg-none"><a href="/{{ request.session.role }}/profile"
+                            class="nav-link">Profile</button></a></li>
+                    <li class="nav-item d-lg-none"><a href="/logout" class="nav-link">Log Out</a></li>
+                    <!-- Dropdown menu with name and profile picture for large screens -->
+                    <span class="d-none d-lg-block align-self-center me-2"><b>{{ request.session.name }}</b></span>
+                    <img src="{{ request.session.pic }}" alt="Profile Picture"
+                        class="img-thumbnail rounded-circle mx-auto d-none d-lg-block" style="width: 3rem;">
+                    <li class="nav-item dropdown d-none d-lg-block">
+                        <a class="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown"></a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="/{{ request.session.role }}">Dashboard</a></li>
+                            <li><a class="dropdown-item" href="/{{ request.session.role }}/profile">Profile</a></li>
+                            <li><a class="dropdown-item" href="/logout">Log Out</a></li>
+                        </ul>
+                    </li>
                     {% else %}
-                    <li class="nav-item"><a href="/donation" class="btn btn-outline-primary mx-2">DONATE NOW</a></li>
+                    <li class="nav-item"><a href="/donation" class="btn btn-outline-primary me-3 d-none d-lg-block">DONATE NOW</a></li>
+                    <li class="nav-item"><a href="/donation" class="nav-link d-lg-none">DONATE NOW</a></li>
                     <li class="nav-item"><a href="/signup" class="nav-link">SIGN UP</a></li>
                     <li class="nav-item"><a href="/login" class="nav-link">LOG IN</a></li>
                     {% endif %}
@@ -66,7 +82,7 @@
                     <hr class="mb-3">
                     <iframe
                         src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d18974.020996062925!2d103.77135166799081!3d1.2967162039869482!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x488d08d6c1f88d6b!2sNational%20University%20of%20Singapore!5e0!3m2!1sen!2ssg!4v1648701028141!5m2!1sen!2ssg"
-                        width="600" height="200" style="border:0;" allowfullscreen="" loading="lazy"
+                        style="width: 90%; height: 200px; border: 0;" id="gmap" allowfullscreen="" loading="lazy"
                         referrerpolicy="no-referrer-when-downgrade"></iframe>
                 </div>
             </div>

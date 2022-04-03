@@ -6,3 +6,4 @@ insert into merchant (email, location) values ('fastfood4@comsenz.com', 'West');
 insert into merchant (email, location) values ('drinks@zdnet.com', 'Central');
 insert into merchant (email, location) values ('indian@reverbnation.com', 'East');
 insert into merchant (email, location) values ('dessert@quantcast.com', 'South');
+insert into merchant (email, location) values ('anonymous_merchant', 'Central');

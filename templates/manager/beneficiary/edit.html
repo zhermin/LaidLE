@@ -3,7 +3,7 @@
 {% block content %}
 <section class="p-5 w-50 mx-auto">
     <div class="d-flex">
-        <a href="/manager/beneficiary" class="text-dark"><i class="bi bi-arrow-return-left h2 me-4"></i></a>
+        <a href="/{{ request.session.role }}/beneficiary" class="text-dark"><i class="bi bi-arrow-return-left h2 me-4"></i></a>
         <h2 class="mb-4">Edit Beneficiary</h2>
     </div>
     {% include 'message_box.html' with variable=messages %}
@@ -30,7 +30,7 @@
             </div>
         </div>
         <div class="col-md-6">
-            <label for="location" class="form-label">Location (Prev: {{ beneficiary.3 }})</label>
+            <label for="location" class="form-label">Location (Current: {{ beneficiary.3 }})</label>
             <select name="location" id="location" class="form-select">
                 <option value="Central">Central</option>
                 <option value="North">North</option>

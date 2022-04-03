@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="p-5 w-50 mx-auto">
+    <div class="container py-2 border rounded bg-light d-flex flex-column">
+        {% include 'message_box.html' with variable=messages %}
+        {% if reward %}
+            <a href="/{{ request.session.role }}" class="text-dark mb-3"><i class="bi bi-arrow-return-left h2"></i></a>
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={{ reward.0 }}"
+                alt="Reward QR Code" class="align-self-center my-2">
+            <hr class="mb-4">
+            <div>
+                <h4>Redemption Date</h4>
+                <p>{{ reward.1 }}</p>
+            </div>
+            <div>
+                <h4>Reward Name</h4>
+                <p>{{ reward.2 }}</p>
+            </div>
+            <div>
+                <h4>Description</h4>
+                <p>{{ reward.3 }}</p>
+            </div>
+        {% else %}
+            <h1>Error: No Such Reward</h1>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

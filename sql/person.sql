@@ -1,5 +1,5 @@
 -- DONOR PERSONS
-insert into person (name, email, password, pic, role) values ('anonymous_donor', 'anonymous', crypt('anonymous', gen_salt('bf')), 'https://robohash.org/laidle', 'donor');
+insert into person (name, email, password, pic, role) values ('anonymous_donor', 'anonymous_donor', crypt('anonymous', gen_salt('bf')), 'https://robohash.org/laidle', 'donor');
 insert into person (name, email, password, pic, role) values ('John Smith', 'dyeomans0@telegraph.co.uk', crypt('V8lU6R3f', gen_salt('bf')), 'https://randomuser.me/api/portraits/men/0.jpg', 'donor');
 insert into person (name, email, password, pic, role) values ('Lee Ziqi', 'akupker1@state.tx.us', crypt('M6tOaamSFND8', gen_salt('bf')), 'https://randomuser.me/api/portraits/women/0.jpg', 'donor');
 insert into person (name, email, password, pic, role) values ('Jane Doe', 'jwelbeck2@umich.edu', crypt('8fMcK3mWEZ', gen_salt('bf')), 'https://randomuser.me/api/portraits/women/1.jpg', 'donor');
@@ -26,6 +26,7 @@ insert into person (name, email, password, pic, role) values ('James Thie', 'dgi
 insert into person (name, email, password, pic, role) values ('Leezora Benjamin', 'cdecaville9@51.la', crypt('nAFmndBc3', gen_salt('bf')), 'https://robohash.org/laidle', 'beneficiary');
 
 -- MERCHANT PERSONS
+insert into person (name, email, password, pic, role) values ('anonymous_merchant', 'anonymous_merchant', crypt('anonymous', gen_salt('bf')), 'https://robohash.org/laidle', 'merchant');
 insert into person (name, email, password, pic, role) values ('Western', 'western0@odnoklassniki.ru', crypt('aVOkhzbkY', gen_salt('bf')), 'https://robohash.org/laidle', 'merchant');
 insert into person (name, email, password, pic, role) values ('Malaysian', 'malaysian@google.com.au', crypt('8K0CN0I', gen_salt('bf')), 'https://robohash.org/laidle', 'merchant');
 insert into person (name, email, password, pic, role) values ('Japanese', 'japanese@plala.or.jp', crypt('C0JSMj', gen_salt('bf')), 'https://robohash.org/laidle', 'merchant');

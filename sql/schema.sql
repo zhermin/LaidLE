@@ -1,7 +1,12 @@
 --- TABLE POPULATION RUNNING ORDER
 -- 1. run everything until ~line 300
 -- 2. run the other sql files person/beneficiary/donor/merchant/food/reward/donation.sql
--- 3. refer below to continue running the other 2 queries at the bottom
+-- 3. run coupon.sql
+
+-- WIPE OUT TABLES FROM SAMPLE AppStore
+DROP TABLE IF EXISTS downloads;
+DROP TABLE IF EXISTS games;
+DROP TABLE IF EXISTS customers;
 
 -- POSTGRES EXTENSIONS
 CREATE EXTENSION IF NOT EXISTS pgcrypto; -- FOR PASSWORD HASHING
@@ -99,7 +104,7 @@ CREATE TABLE IF NOT EXISTS donation (
 CREATE OR REPLACE FUNCTION update_coin() RETURNS TRIGGER AS
 $BODY$
 BEGIN
-	IF (NEW.donor_email <> 'anonymous')
+	IF (NEW.donor_email <> 'anonymous_donor')
     THEN
         UPDATE donor
 		SET coin = donor.coin + TRUNC(NEW.donation_amt/1)
@@ -181,7 +186,8 @@ ORDER BY COUNT(c.benef_email), b.household_income;
 CREATE TABLE IF NOT EXISTS claim (
 	coupon_sn VARCHAR UNIQUE NOT NULL,
 	benef_email VARCHAR NOT NULL,
-	merchant_email VARCHAR NOT NULL CHECK (merchant_email <> 'anonymous'),
+	merchant_email VARCHAR NOT NULL CHECK (merchant_email <> 'anonymous_merchant'),
+	food_sn VARCHAR NOT NULL,
 	claim_date DATE NOT NULL DEFAULT NOW(),
 	FOREIGN KEY (coupon_sn, benef_email) REFERENCES coupon(coupon_sn, benef_email)
 );
@@ -289,11 +295,11 @@ BEGIN
 		SET coin = coin - (SELECT reward_price
 						   FROM reward
 						   WHERE reward.reward_sn = NEW.reward_sn)
-	 	WHERE donor_email = NEW.donor_email;
+	 	WHERE email = NEW.donor_email;
 		UPDATE reward SET reward_qty = reward_qty - 1 WHERE reward_sn = NEW.reward_sn;
 
 	END IF;
-	RETURN NULL;
+	RETURN NEW;
 END;
 $BODY$
 language plpgsql;
@@ -302,35 +308,3 @@ CREATE TRIGGER check_redemption
 BEFORE INSERT ON redemption
 FOR EACH ROW
 EXECUTE PROCEDURE check_redemption();
-
---- [STOP HERE] CONT. TABLE POPULATION RUNNING ORDER
--- 0. run everything on top and the other sql files (which you should have already done)
--- 1. run coupon allocation below first
--- 2. check uuid from coupon table then populate claims table (only 2nd uuid should appear in claims)
-
--- COUPON ALLOCATION: FRONTEND CONTROLLED
-INSERT INTO coupon (issue_date, expiry_date, benef_email)
-SELECT	DATE_TRUNC('MONTH', f.year_month + INTERVAL '1 MONTH') AS issue_date,
-		DATE_TRUNC('MONTH', f.year_month + INTERVAL '2 MONTH') AS expiry_date,
-		benef_email
-FROM fund_view f
-CROSS JOIN LATERAL (
-	SELECT b.email AS benef_email
-	FROM beneficiary b LEFT JOIN coupon c
-	ON b.email = c.benef_email
-	GROUP BY b.email, b.household_income, f.year_month
-	HAVING f.year_month = DATE_TRUNC('MONTH', NOW() - INTERVAL '1 month')
-	ORDER BY COUNT(c.benef_email), b.household_income
-	LIMIT f.quotient
-) AS benef_email;
-
--- POPULATE CLAIM TABLE (USE THE FIRST COUPON_SN AND FILL IT IN MANUALLY FOR TESTING)
-INSERT INTO claim (coupon_sn, benef_email, merchant_email, claim_date) values ('7d561d48-2d6e-4fe2-af5e-48607bd7c831', 'kdeetch5@stumbleupon.com', 'malaysian@google.com.au', TIMESTAMP '2022-03-15'); -- NOT ISSUED YET
-INSERT INTO claim (coupon_sn, benef_email, merchant_email, claim_date) values ('7d561d48-2d6e-4fe2-af5e-48607bd7c831', 'gmoylane4@bloomberg.com',  'malaysian@google.com.au', TIMESTAMP '2022-04-15'); -- SN AND BENEF DO NOT MATCH
-INSERT INTO claim (coupon_sn, benef_email, merchant_email, claim_date) values ('7d561d48-2d6e-4fe2-af5e-48607bd7c831', 'kdeetch5@stumbleupon.com', 'malaysian@google.com.au', TIMESTAMP '2022-06-15'); -- EXPIRED
-INSERT INTO claim (coupon_sn, benef_email, merchant_email, claim_date) values ('7d561d48-2d6e-4fe2-af5e-48607bd7c831', 'kdeetch5@stumbleupon.com', 'malaysian@google.com.au', TIMESTAMP '2022-04-15'); -- ONLY THIS SHOULD WORK
-INSERT INTO claim (coupon_sn, benef_email, merchant_email, claim_date) values ('7d561d48-2d6e-4fe2-af5e-48607bd7c831', 'kdeetch5@stumbleupon.com', 'malaysian@google.com.au', TIMESTAMP '2022-05-16'); -- DOUBLE CLAIM ERROR
-
--- TEST MULTIPLE COUPONS
-INSERT INTO coupon (benef_email) VALUES ('kdeetch5@stumbleupon.com');
-INSERT INTO coupon (benef_email) VALUES ('kdeetch5@stumbleupon.com');

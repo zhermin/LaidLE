@@ -1,9 +1,10 @@
 from django.shortcuts import render, redirect
 from django.db import IntegrityError, connection
 from django.contrib import messages
-import uuid
+from account.decorators import check_permissions
 
 # Create your views here.
+@check_permissions('merchant')
 def merchant_view(request):
 
     if request.POST:
@@ -35,6 +36,11 @@ def merchant_view(request):
 
     return render(request, 'merchant/index.html', context)
 
+@check_permissions('merchant')
+def profile_view(request):
+    return render(request, 'account/profile.html')
+
+@check_permissions('merchant')
 def add_food_view(request):
 
     if request.POST:
@@ -57,6 +63,7 @@ def add_food_view(request):
 
     return render(request, 'merchant/add.html')
 
+@check_permissions('merchant')
 def edit_food_view(request, food_sn):
 
     # fetch the object related to passed id

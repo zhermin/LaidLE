@@ -1,0 +1,76 @@
+{% extends 'manager/manager_base.html' %}
+
+{% block manager_content %}
+<nav>
+    <ul class="nav nav-tabs">
+        <li class="nav-item">
+            <a class="nav-link" href="/manager">Donations</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="beneficiary">Beneficiaries</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="merchant">Merchants</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="food">Food</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="donor">Donors</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="coupon">Coupon</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="claim">Claims</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="reward">Rewards</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link active" href="redemption">Redemptions</a>
+        </li>
+    </ul>
+</nav>
+
+<div class="p-3 bg-white border border-top-0 table-responsive">
+    <table class="table table-sm table-striped table-hover border align-middle">
+        <thead>
+            <th>#</th>
+            <th>Reward SN</th>
+            <th>Reward Name</th>
+            <th>Redeem Date</th>
+            <th>Donor Email</th>
+        </thead>
+        {% for redemption in redemptions %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ redemption.0 }}</td>
+                <td>{{ redemption.1 }}</td>
+                <td>{{ redemption.2 }}</td>
+                <td>{{ redemption.3 }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+    <nav>
+        <ul class="pagination justify-content-center mt-4">
+            <li class="page-item {% if not redemptions.has_previous %} disabled {% endif %}">
+                <a href="?page=1" class="page-link">&laquo First</a>
+            </li>
+            <li class="page-item {% if not redemptions.has_previous %} disabled {% endif %}">
+                <a href="?page={% if redemptions.has_previous %}{{ redemptions.previous_page_number }}{% endif %}"
+                    class="page-link">Previous</a>
+            </li>
+            <li class="page-item disabled"><a class="page-link text-primary">
+                Page {{ redemptions.number }} of {{ redemptions.paginator.num_pages }}
+            </a></li>
+            <li class="page-item {% if not redemptions.has_next %} disabled {% endif %}">
+                <a href="?page={% if redemptions.has_next %}{{ redemptions.next_page_number }}{% endif %}"
+                    class="page-link">Next</a></li>
+            <li class="page-item {% if not redemptions.has_next %} disabled {% endif %}">
+                <a href="?page={{ redemptions.paginator.num_pages }}" class="page-link">Last &raquo</a>
+            </li>
+        </ul>
+    </nav>
+</div>
+{% endblock %}

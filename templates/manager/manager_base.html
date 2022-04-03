@@ -3,7 +3,21 @@
 {% block content %}
 <section class="p-5 bg-light">
     <div class="container">
-        <h1 class="mb-4">Manage All Users and Food Items Here</h1>
+        <div class="d-flex align-items-center mb-3">
+            <h1>Admin Panel</h1>
+            <form method="POST" style="display: inline" class="w-50 mx-1">
+                {% csrf_token %}
+                <button
+                    onclick="return confirm('Are you sure you want allocate coupons to the beneficiaries for the previous month?');"
+                    class="btn btn-info mx-3"
+                    type="submit"
+                    name="action"
+                    value="allocate"
+                >
+                    Allocate Coupons for Previous Month
+                </button>
+            </form>
+        </div>
         {% include 'message_box.html' with variable=messages %}
 
         {% block manager_content %}
@@ -24,10 +38,22 @@
                 <li class="nav-item">
                     <a class="nav-link" href="donor">Donors</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="coupon">Coupons</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="claim">Claims</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="reward">Rewards</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="redemption">Redemptions</a>
+                </li>
             </ul>
         </nav>
 
-        <div class="p-3 bg-white border border-top-0">
+        <div class="p-3 bg-white border border-top-0 table-responsive">
             <table class="table table-sm table-striped table-hover border align-middle">
                 <thead>
                     <th>#</th>

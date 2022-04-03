@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="p-5 w-50 mx-auto">
+    <div class="container py-2">
+        {% include 'message_box.html' with variable=messages %}
+        <img src="{{ request.session.pic }}" alt="Profile Picture"
+            class="img-thumbnail rounded-circle mx-auto d-block" style="width: 10rem;">
+        <h1 class="my-4">Edit Profile</h1>
+        <form method="POST" class="row g-3">
+            {% csrf_token %}
+            <input type="hidden" name="old_email" value="{{ request.session.email }}">
+            <div class="col-12">
+                <label for="name" class="form-label">
+                    {% if request.session.role == 'merchant' %}
+                        Stall Name
+                    {% else %}
+                        Full Name
+                    {% endif %}
+                </label>
+                <input type="text" class="form-control" name="name" id="name" value="{{ request.session.name }}">
+            </div>
+            <div class="col-12">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" name="email" id="email" value="{{ request.session.email }}">
+            </div>
+            <div class="col-12">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" class="form-control" name="password" id="password" minlength="6" required>
+            </div>
+            {% if request.session.role == 'beneficiary' or request.session.role == 'merchant' %}
+            <div class="col-md-12">
+                <label for="location" class="form-label">Location (Current: {{ request.session.location }})</label>
+                <select name="location" id="location" class="form-select">
+                    <option value="Central">Central</option>
+                    <option value="North">North</option>
+                    <option value="South">South</option>
+                    <option value="East">East</option>
+                    <option value="West">West</option>
+                </select>
+            </div>
+            {% endif %}
+            {% if request.session.role == 'beneficiary' %}
+            <div class="col-md-12">
+                <label class="form-label">*Please contact LaidLE if your household income has changed.</label>
+            </div>
+            {% endif %}
+            <div class="col-12"></div>
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary">Confirm Edit</button>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}

@@ -10,3 +10,4 @@ insert into donor (email, coin) values ('cburr8@nationalgeographic.com', 60);
 insert into donor (email, coin) values ('krowena9@de.vu', 84);
 insert into donor (email, coin) values ('bblawa@elpais.com', 25);
 insert into donor (email, coin) values ('eraynardb@shareasale.com', 0);
+insert into donor (email) values ('anonymous_donor');

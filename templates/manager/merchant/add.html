@@ -3,7 +3,7 @@
 {% block content %}
 <section class="p-5 w-50 mx-auto">
     <div class="d-flex">
-        <a href="/manager/merchant" class="text-dark"><i class="bi bi-arrow-return-left h2 me-4"></i></a>
+        <a href="/{{ request.session.role }}/merchant" class="text-dark"><i class="bi bi-arrow-return-left h2 me-4"></i></a>
         <h2 class="mb-4">Add New Merchant</h2>
     </div>
     {% include 'message_box.html' with variable=messages %}
@@ -33,7 +33,7 @@
         </div>
         <div class="col-12"></div>
         <div class="col-12">
-            <button type="submit" class="btn btn-primary">Confirm Edit</button>
+            <button type="submit" class="btn btn-primary">Confirm Add</button>
         </div>
     </form>
 </section>

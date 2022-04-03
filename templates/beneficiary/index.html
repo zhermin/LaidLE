@@ -3,21 +3,18 @@
 {% block content %}
 <section class="p-5">
     <div class="container py-2">
-        <!-- <h2>Welcome Beneficiary Terry Tantio!</h2>
-        <h3>You are in the North area</h3>
-        <br> -->
-        <h1>Redeem Your Favourite Food</h1>
-        <h2>Coupons: {{ coupon_count }}</h2>
-        {% for coupon in coupons %}
-            <h3>{{ coupon.0 }}</h3>
-        {% endfor %}
-        <h4 class="mt-4">Showing the {{ request.session.location }} stalls nearest to you first!</h4>
+        {% include 'message_box.html' with variable=messages %}
+        <div class="d-flex align-items-center">
+            <h1>Redeem Your Favourite Food</h1>
+            <h3 class="bg-info py-2 px-3 mx-4 rounded">Coupons: {{ coupon_count }}</h3>
+        </div>
+        <h4 class="mt-4">Showing the stalls nearest to you first @ {{ food_items_near.0.0 }}!</h4>
         <div class="d-flex flex-row flex-nowrap overflow-auto mt-4">
-            {% include 'beneficiary/food_card.html' with food_items=food_items_near %}
+            {% include 'beneficiary/food_card.html' with food_items=food_items_near coupons=coupons coupon_count=coupon_count %}
         </div>
         <h4 class="mt-5">A little extra travelling required!</h4>
         <div class="d-flex flex-row flex-nowrap overflow-auto mt-4">
-            {% include 'beneficiary/food_card.html' with food_items=food_items_far %}
+            {% include 'beneficiary/food_card.html' with food_items=food_items_far coupons=coupons coupon_count=coupon_count %}
         </div>
     </div>
 </section>
