@@ -4,7 +4,7 @@
 
 LaidLE is a Full-Stack CRUD webapp for a meal-crowdfunding social enterprise project, aiming to alleviate some of the challenges faced by the ones that fall between the cracks of society. 
 
-As a donor, you can easily donate at our partnered food merchants in order to fund the next meal for our beneficiaries either anonymously or as a LaidLE Friend and collect LaidLE Coins to redeem rewards at our shop!
+As a donor, you can easily donate at our partnered food merchants in order to fund the next meal for our beneficiaries either anonymously or as a LaidLE member and collect LaidLE Coins to redeem rewards at our shop!
 
 You can also donate through our partnered merchants by scanning their QR Codes (example below)!
 
@@ -38,7 +38,7 @@ You can also donate through our partnered merchants by scanning their QR Codes (
 ### Other Notable Features
 * Fully mobile-responsive since LaidLE is primarily targetting mobile users with abundant QR Code integration
 * Home page shows aggregated top donors for donor incentivisation
-* Donations can either be from an anonymous or non-anonymous donor, to an anonymous or non-anonymous merchant
+* Donations can either be from an anonymous or registered donor, to an anonymous or registered merchant (merchant identified using GET request in QR URL link)
 * Session-based authorisation with custom authentication decorators, storing only hashed passwords in the database
 * All database operations performed using raw SQL (project requirements) instead of ORM
 * All integrity constraints, raw SQL schema design and demo population code can be found in the folder `/sql`
@@ -47,10 +47,10 @@ You can also donate through our partnered merchants by scanning their QR Codes (
 * Random Donor
   * `asimonnet3@liveinternet.ru`
   * `cMTDFyRJ`
-* Rich Donor
+* Donor with Lots of Coins
   * `akupker1@state.tx.us`
   * `M6tOaamSFND8`
-* Beneficiary with 0 Coupons
+* Beneficiary with 0 Coupon
   * `kdeetch5@stumbleupon.com`
   * `fLCbXW2R`
 * Beneficiary with 1 Coupon
