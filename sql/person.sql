@@ -37,4 +37,4 @@ insert into person (name, email, password, pic, role) values ('Indian', 'indian@
 insert into person (name, email, password, pic, role) values ('Dessert', 'dessert@quantcast.com', crypt('3NeXUZk', gen_salt('bf')), 'https://robohash.org/laidle', 'merchant');
 
 -- MANAGER PERSONS
-insert into person (name, email, password, pic, role) values ('Mr. Manager', 'manager@manager.com', crypt('manager', gen_salt('bf')), 'https://robohash.org/laidle', 'manager');
+insert into person (name, email, password, pic, role) values ('LaidLE Manager', 'manager@laidle.com', crypt('manager', gen_salt('bf')), 'https://robohash.org/laidle', 'manager');

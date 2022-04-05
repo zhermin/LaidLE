@@ -30,7 +30,7 @@
             </div>
             {% if request.session.role == 'beneficiary' or request.session.role == 'merchant' %}
             <div class="col-md-12">
-                <label for="location" class="form-label">Location (Current: {{ request.session.location }})</label>
+                <label for="location" class="form-label">Location</label>
                 <select name="location" id="location" class="form-select">
                     <option value="Central">Central</option>
                     <option value="North">North</option>

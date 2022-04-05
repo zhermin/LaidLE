@@ -96,8 +96,12 @@ CREATE TABLE IF NOT EXISTS donation (
 	merchant_email VARCHAR,
 	donation_amt NUMERIC NOT NULL CHECK (donation_amt >= 0),
 	PRIMARY KEY (donation_date, donor_email, merchant_email),
-	FOREIGN KEY (donor_email) REFERENCES donor(email),
+	FOREIGN KEY (donor_email) REFERENCES donor(email)
+	    ON UPDATE CASCADE ON DELETE CASCADE
+		DEFERRABLE INITIALLY DEFERRED,
 	FOREIGN KEY (merchant_email) REFERENCES merchant(email)
+        ON UPDATE CASCADE ON DELETE CASCADE
+		DEFERRABLE INITIALLY DEFERRED
 );
 
 -- TRIGGERS TO UPDATE COIN COUNT
@@ -190,8 +194,10 @@ CREATE TABLE IF NOT EXISTS claim (
 	food_sn VARCHAR NOT NULL,
 	claim_date DATE NOT NULL DEFAULT NOW(),
 	FOREIGN KEY (coupon_sn, benef_email) REFERENCES coupon(coupon_sn, benef_email)
+        ON UPDATE CASCADE ON DELETE CASCADE
+		DEFERRABLE INITIALLY DEFERRED
 );
-
+UPDATE beneficiary SET email = ''
 -- CLAIM TRIGGER
 CREATE OR REPLACE FUNCTION check_claim() RETURNS TRIGGER AS
 $BODY$

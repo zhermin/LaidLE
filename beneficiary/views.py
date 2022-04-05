@@ -84,6 +84,39 @@ def beneficiary_view(request):
 
 @check_permissions('beneficiary')
 def profile_view(request):
+
+    if request.POST:
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    WITH data AS (
+                        UPDATE person
+                        SET name = %(name)s,
+                            email = %(email)s,
+                            password = crypt(%(password)s, gen_salt('bf'))
+                        WHERE email = %(old_email)s
+                        RETURNING email
+                    )
+                    UPDATE beneficiary
+                    SET email = (SELECT email FROM data),
+                        location = %(location)s
+                    WHERE email = %(old_email)s;
+                """, {
+                    'old_email': request.POST['old_email'],
+                    'name': request.POST['name'],
+                    'email': request.POST['email'],
+                    'password': request.POST['password'],
+                    'location': request.POST['location'],
+                })
+
+                messages.add_message(request, messages.SUCCESS, 'Profile updated successfully!')
+                request.session['name'] = request.POST['name']
+                request.session['email'] = request.POST['email']
+                return redirect(f"/{request.session['role']}")
+
+        except (IntegrityError) as e:
+            messages.add_message(request, messages.ERROR, "One or more fields are invalid.")
+
     return render(request, 'account/profile.html')
 
 @check_permissions('beneficiary')

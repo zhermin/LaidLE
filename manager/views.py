@@ -47,6 +47,31 @@ def manager_view(request):
 
 @check_permissions('manager')
 def profile_view(request):
+
+    if request.POST:
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    UPDATE person
+                    SET name = %(name)s,
+                        email = %(email)s,
+                        password = crypt(%(password)s, gen_salt('bf'))
+                    WHERE email = %(old_email)s
+                """, {
+                    'old_email': request.POST['old_email'],
+                    'name': request.POST['name'],
+                    'email': request.POST['email'],
+                    'password': request.POST['password'],
+                })
+
+                messages.add_message(request, messages.SUCCESS, 'Profile updated successfully!')
+                request.session['name'] = request.POST['name']
+                request.session['email'] = request.POST['email']
+                return redirect(f"/{request.session['role']}")
+
+        except (IntegrityError) as e:
+            messages.add_message(request, messages.ERROR, "One or more fields are invalid.")
+
     return render(request, 'account/profile.html')
 
 # Beneficiary Views
