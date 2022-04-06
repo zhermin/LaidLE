@@ -57,8 +57,20 @@ You can also donate through our partnered merchants by scanning their QR Codes (
   * `manager@laidle.com`
   * `manager`
 
+### SQL Table Generation and Population Running Order
+1. Run everything in `schema.sql` to create all tables, triggers and views
+2. Run these sql files to populate the respective tables with demo data
+   * `person.sql`
+   * `beneficiary.sql`
+   * `donor.sql`
+   * `merchant.sql`
+   * `food.sql`
+   * `reward.sql`
+   * `donation.sql`
+3. Run `coupon.sql` to populate the `coupon` table with some coupons
+
 ## Team Members
 1. Tam Zher Min (Full-Stack Django/Bootstrap Website)
-2. Elisha Lee (SQL Code & Schema Design)
-3. Weldon Chue (Video Presentation)
-4. Tran Minh Hoang (Video Presentation)
+2. Elisha Lee (Complex SQL Code & Schema Design)
+3. Weldon Chue (10-Minute Video Presentation)
+4. Tran Minh Hoang

@@ -1,5 +1,5 @@
 --- TABLE POPULATION RUNNING ORDER
--- 1. run everything until ~line 300
+-- 1. run everything in this file
 -- 2. run the other sql files person/beneficiary/donor/merchant/food/reward/donation.sql
 -- 3. run coupon.sql
 
@@ -197,7 +197,7 @@ CREATE TABLE IF NOT EXISTS claim (
         ON UPDATE CASCADE ON DELETE CASCADE
 		DEFERRABLE INITIALLY DEFERRED
 );
-UPDATE beneficiary SET email = ''
+
 -- CLAIM TRIGGER
 CREATE OR REPLACE FUNCTION check_claim() RETURNS TRIGGER AS
 $BODY$
